@@ -1,0 +1,368 @@
+Open Watcom Linker Version 2.0 beta Apr 24 2026 14:34:27 (64-bit)
+Copyright (c) 2002-2026 The Open Watcom Contributors. All Rights Reserved.
+Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
+Created on:       26/04/26 14:26:35
+Executable Image: wordlelx.exe
+creating a DOS executable
+
+
+                        +------------+
+                        |   Groups   |
+                        +------------+
+
+Group                           Address              Size
+=====                           =======              ====
+
+DGROUP                          02b4:0000            00003550
+
+
+
+                        +--------------+
+                        |   Segments   |
+                        +--------------+
+
+Segment                Class          Group          Address         Size
+=======                =====          =====          =======         ====
+
+BEGTEXT                CODE           AUTO           0000:0000       00000007
+_TEXT                  CODE           AUTO           0000:0010       0000289c
+CSVC_HP_TEXT           CODE           AUTO           0000:28ac       00000028
+LHSTUB_TEXT            CODE           AUTO           0000:28d4       000000fc
+COUGRAPH_TEXT          CODE           AUTO           0000:29d0       00000165
+FAR_DATA               FAR_DATA       AUTO           02b3:0005       00000000
+_NULL                  BEGDATA        DGROUP         02b4:0000       00000020
+_AFTERNULL             BEGDATA        DGROUP         02b6:0000       00000002
+CONST                  DATA           DGROUP         02b6:0002       00001737
+CONST2                 DATA           DGROUP         0429:000a       000008da
+_DATA                  DATA           DGROUP         04b7:0004       0000022a
+XIB                    DATA           DGROUP         04d9:000e       00000000
+XI                     DATA           DGROUP         04d9:000e       0000000c
+XIE                    DATA           DGROUP         04da:000a       00000000
+YIB                    DATA           DGROUP         04da:000a       00000000
+YI                     DATA           DGROUP         04da:000a       00000006
+YIE                    DATA           DGROUP         04db:0000       00000000
+DATA                   DATA           DGROUP         04db:0000       00000000
+_BSS                   BSS            DGROUP         04db:0000       000002e0
+STACK                  STACK          DGROUP         0509:0000       00001000
+
+
+                        +----------------+
+                        |   Memory Map   |
+                        +----------------+
+
+* = unreferenced symbol
++ = symbol only referenced locally
+
+Address        Symbol
+=======        ======
+
+Module: exm_main.obj(exm_main.obj)
+0000:0060+     _DoQuit
+0000:0067+     _DoNew
+0000:007c+     _DoSubmit
+0000:01ee+     _WordleCardHandler
+0000:02f5*     _EventDispatcher
+0000:038c      main_
+02b4:2034+     _msgAppName
+02b4:2038+     _msgQuit
+02b4:203c+     _msgTitle
+02b4:2040+     _msgFkQuit
+02b4:2044+     _msgFkNew
+02b4:2048+     _msgFkSubm
+02b4:204c+     _StringTable
+02b4:2058+     _WordleTopMenu
+02b4:206e+     _WordleFKeys
+02b4:2086+     _WordleCard
+02b4:2270+     _app_event
+02b4:2280+     _gs
+02b4:230a+     _CapData
+02b4:2428+     _game_over_waiting
+02b4:242a+     _Done
+Module: exm_display.obj(exm_display.obj)
+0000:07a7      _exm_draw_chrome
+0000:089f      _exm_draw_board
+0000:094d      _exm_draw_keyboard
+0000:0b1b      _exm_draw_message
+Module: game.obj(game.obj)
+0000:0b65      _game_init
+0000:0b94      _game_score_guess
+Module: words.obj(words.obj)
+0000:0caf      _words_count
+0000:0cb3      _words_get
+Module: /Users/jarrod/github/EXM/LIBS/tsr.lib(csvc_hp.asm)
+0000:28ac*     _c_service_free_static
+0000:28ac*     _c_service_far_ptr
+0000:28be      _c_service2
+0000:28be*     _c_service2_near_ptr
+0000:28be*     _c_service2_long_far
+0000:28ac*     _c_service
+0000:28ac*     _c_service_get_avail_mem
+0000:28be*     _c_service2_reg_based
+0000:28be*     _c_service2_far_mem
+0000:28ac*     _c_service_reg_based
+0000:28be*     _c_service2_long_based
+0000:28be*     _c_service2_reg_far
+0000:28ac*     _c_service_near_ptr
+0000:28be*     _c_service2_get_avail_mem
+0000:28d2*     patch_service_interrupt
+0000:28ac*     _c_service_far_mem
+0000:28ac*     _c_service_long_far
+0000:28be*     _c_service2_free_static
+0000:28d3*     _break_point
+0000:28be*     _c_service2_based_ptr
+0000:28be*     _c_service2_far_ptr
+0000:28ac*     _c_service_based_ptr
+0000:28ac*     _c_service_reg_far
+0000:28ac*     _c_service_long_based
+Module: /Users/jarrod/github/EXM/LIBS/mlhstub.lib(lhstub.asm)
+0000:2976*     _GetDefaultFont
+0000:28ec*     _GetLHAPIBlockPtr
+0000:2970*     _SetDefaultFont
+0000:28e0      _ReactivateLHAPI
+0000:28e6*     _UninitializeLHAPI
+0000:2916*     _SetError
+0000:299a*     _ShowSymbol
+0000:294c*     _Panel
+0000:29b8*     _ResetRepRule
+0000:29c4*     _SetHelpFkey
+0000:290a*     _ResetAlt
+0000:29a0*     _ResetVideo
+0000:2952*     _Outline
+0000:2940*     _DrawFKeys
+0000:2946*     _Rectangle
+0000:28f8*     _SendFocusMsg
+0000:292e*     _GetErrorHandler
+0000:2928*     _SetErrorHandler
+0000:2910      _GetFocus
+0000:2964*     _Line
+0000:2922*     _ClearError
+0000:28fe      _SendMsg
+0000:29ca*     _SyncLHAPIKeyState
+0000:2994*     _IntersectLocalClipping
+0000:28da      _DeactivateLHAPI
+0000:2904      _SubclassMsg
+0000:29ac*     _GetCurrentFont
+0000:291c*     _GetError
+0000:29a6*     _SetCurrentFont
+0000:29b2*     _SetRepRule
+0000:296a*     _RegisterFont
+0000:293a*     _DrawChar
+0000:297c*     _SetMenuFont
+0000:28d4      _InitializeLHAPI
+0000:295e      _ClearRect
+0000:2934*     _DrawText
+0000:29be*     _DrawNChars
+0000:28f2*     _SendAllMsg
+0000:2982*     _SetGlobalClipping
+0000:2958*     _ShadowBox
+0000:298e*     _GetLocalClipping
+0000:2988*     _SetLocalClipping
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(rand.c)
+0000:0cd2      rand_
+0000:0d04      srand_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(memset.c)
+0000:0d1b      memset_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(istable.c)
+02b4:1efe      __IsTable
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(toupper.c)
+0000:0d36      toupper_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(time.c)
+0000:0d44      time_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(cstart)
+0000:0003*     ___begtext
+02b4:0000*     __nullarea
+0000:0d76      _cstart_
+0000:0f20      __exit_
+0000:0f3d      __do_exit_with_msg_
+0000:1003      __GETDS
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(cmodel)
+0000:100e      _small_code_
+0000:100e*     CodeModelMismatch
+Module: /Users/jarrod/github/EXM/LIBS/captko.lib(cougraph.asm)
+0000:2a78      _G_ColorSel
+0000:29e1      _G_FillMask
+0000:2a39      _G_Rect
+0000:2ae2      _G_Text
+0000:2a11*     _G_LorgA
+0000:2aff*     _G_GetFont
+0000:2a5a*     _G_Point
+0000:2b0b*     _G_Font
+0000:29d0*     _G_Mode
+0000:2a69      _G_Move
+0000:2a84      _G_RepRule
+0000:29dc*     _G_Defaults
+0000:2aab*     _G_ImageGet
+0000:2a4b      _G_Draw
+0000:2a9c*     _G_PointRead
+0000:2b1b*     _G_Scroll
+0000:2ac9*     _G_ImagePut
+0000:2a20*     _G_ClipL
+0000:2a90*     _G_LineType
+0000:29f1*     _G_GetInfo
+0000:2a01*     _G_SetInfo
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(memcpy.c)
+0000:100e      memcpy_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(memcmp.c)
+0000:102b      memcmp_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(i4m)
+0000:1048      __I4M
+0000:1048      __U4M
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(gtctm.c)
+0000:1060      __getctime_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mktime.c)
+0000:10e9      mktime_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(xmsg.c)
+0000:1184*     __exit_with_msg_
+0000:1187      __fatal_runtime_error_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(cmain086.c)
+0000:119e      __CMain
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(initrtns.c)
+0000:11de      __InitRtns
+0000:1235      __FiniRtns
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(crwdata)
+02b4:20c6      __curbrk
+02b4:20ce      __STACKLOW
+02b4:20d0      __STACKTOP
+02b4:20d2      __cbyte
+02b4:20d4      __child
+02b4:20d6      __no87
+02b4:20e3      ___FPE_handler
+02b4:20c8      __psp
+02b4:20d7      __get_ovl_stack
+02b4:20db      __restore_ovl_stack
+02b4:20df      __close_ovl_file
+02b4:20e7      __LpCmdLine
+02b4:20eb      __LpPgmName
+02b4:20ca      __osmajor
+02b4:20cb      __osminor
+02b4:20cc      __osmode
+02b4:20cd      __HShift
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(uselfn.c)
+02b4:20f0      ___uselfn
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(dosseg)
+0000:1294      __DOSseg__
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(locmktim.c)
+0000:1295      __local_mktime_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(gmtime.c)
+0000:146f      __brktime_
+0000:15a2+     _gmtime_
+0000:15c5*     gmtime_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(tzset.c)
+02b4:20f2      ___start_dst
+02b4:2104      ___end_dst
+02b4:2218*     _tzname
+02b4:221c      _timezone
+02b4:2220      _daylight
+02b4:2222      ___dst_adjust
+0000:15ce*     __DontCacheOSTZ_
+0000:15e2*     __CacheOSTZ_
+0000:19c0+     __parse_tz_
+0000:1aa4      tzset_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(timeutil.c)
+0000:1bbc      __isindst_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(enterdb.c)
+0000:1e31      __EnterWVIDEO_
+02b4:224a+     __WD_Present
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(___argc.c)
+02b4:243e      ____Argc
+02b4:2440      ____Argv
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(exit.c)
+0000:1e4d+     __null_int23_exit_
+0000:1e4e      exit_
+0000:1e6a*     _exit_
+02b4:224c+     ___int23_exit
+02b4:224e+     ___FPE_handler_exit
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(sgdef086)
+02b4:225e      __Start_XI
+02b4:226a      __End_XI
+02b4:226a      __Start_YI
+02b4:2270      __End_YI
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(leapyear.c)
+0000:1e7a      __leapyear_
+02b4:2000      ___diyr
+02b4:201a      ___dilyr
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(i4d)
+0000:1ea4*     __I4D
+0000:1eed      __U4D
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(getenv.c)
+0000:1f71      getenv_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(environ.c)
+02b4:2442      ___env_mask
+02b4:2444      _environ
+02b4:2446      __wenviron
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mbterm.c)
+0000:1fe2      _mbterm_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mbsnextc.c)
+0000:2008      _mbsnextc_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mbcupper.c)
+0000:2025      _mbctoupper_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mbsinc.c)
+0000:2039      _mbsinc_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(setenvp.c)
+0000:2057      __setenvp_
+0000:20fc      __freeenvp_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mbislead.c)
+0000:2130      _ismbblead_
+02b4:244a      ___MBCSIsTable
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mbinit.c)
+0000:2198      __mbinit_
+02b4:2250      ___MBCodePage
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mbdtoupp.c)
+0000:21fc      _mbdtoupper_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(nmalloc.c)
+0000:220a*     _nmalloc_
+0000:220a      malloc_
+02b4:2252      ___nheapbeg
+02b4:2254      ___MiniHeapRover
+02b4:2256      ___LargestSizeB4MiniHeapRover
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(nfree.c)
+0000:22c3      _nfree_
+0000:22c3      free_
+02b4:254c+     ___MiniHeapFreeRover
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(clearenv.c)
+0000:2386      clearenv_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mbisdbcs.c)
+02b4:2258      ___IsDBCS
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(getltdos.c)
+0000:2423      dos_get_dbcs_lead_table_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(getcpdos.c)
+0000:244c      dos_get_code_page_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(mem.c)
+0000:2460      __MemAllocator
+0000:2528      __MemFree
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(nmemneed.c)
+0000:26a2      __nmemneed_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(grownear.c)
+0000:270b+     __LastFree_
+0000:2772      __ExpandDGROUP_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(amblksiz.c)
+02b4:225a      __amblksiz
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(heapen.c)
+0000:2845*     _heapenable_
+02b4:225c      ___heap_enabled
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(sbrk.c)
+0000:2851      __brk_
+0000:28a2*     sbrk_
+Module: /Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib(errno.c)
+0000:28a8*     __get_errno_ptr_
+02b4:254e      _errno
+
+
+                        +--------------------+
+                        |   Libraries Used   |
+                        +--------------------+
+
+/Users/jarrod/github/EXM/LIBS/captko.lib
+/Users/jarrod/github/EXM/LIBS/mlhstub.lib
+/Users/jarrod/github/EXM/LIBS/tsr.lib
+/Users/jarrod/watcom-src/rel/lib286/dos/clibs.lib
+
+
+                        +-----------------------+
+                        |   Linker Statistics   |
+                        +-----------------------+
+
+Stack size:  1000 (4096.)
+Memory size:  6090 (24720.)
+Entry point address: 0000:0d76
+Link time: 00:00.59

@@ -1,0 +1,53 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/jarrod/**)",
+      "Bash(brew list *)",
+      "Read(//Applications/**)",
+      "Read(//usr/local/**)",
+      "Bash(curl -s \"https://api.github.com/repos/open-watcom/open-watcom-v2/releases/latest\")",
+      "Bash(python3 -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\(r['tag_name']\\); [print\\(a['name'], a['browser_download_url']\\) for a in r['assets']]\")",
+      "Bash(curl -sL \"https://api.github.com/repos/open-watcom/open-watcom-v2/releases\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -sI \"https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/ow-snapshot.tar.xz\")",
+      "Bash(chmod +x ~/watcom-src/setvars-mac.sh)",
+      "Bash(zsh -c \"source setvars-mac.sh && ./build.sh && ./build.sh rel\")",
+      "Bash(echo \"Build PID: $!\")",
+      "Read(//private/tmp/**)",
+      "Bash(awk '{print $6, $7, $8}')",
+      "Bash(brew install *)",
+      "Bash(export WATCOM=\"$HOME/watcom-src/rel\")",
+      "Bash(export PATH=\"$WATCOM/armo64:$PATH\")",
+      "Bash(export INCLUDE=\"$WATCOM/h\")",
+      "Bash(wcc -0 -mm -bt=dos -os -wx -isrc -i=__TRACKED_VAR__/h src/game.c)",
+      "Bash(wcc -0 -mm -bt=dos -os -wx -isrc -i=__TRACKED_VAR__/h src/words.c)",
+      "Bash(wcc -0 -mm -bt=dos -os -wx -isrc -i=__TRACKED_VAR__/h src/text_mode.c)",
+      "Bash(wcc -0 -mm -bt=dos -os -wx -isrc -i=__TRACKED_VAR__/h src/gfx_mode.c)",
+      "Bash(wcc -0 -mm -bt=dos -os -wx -isrc -i=__TRACKED_VAR__/h src/main.c)",
+      "Bash(wcc -0 -mm -bt=dos -fo=game.obj src/game.c)",
+      "Bash(wcc -0 -mm -bt=dos -os -wx -isrc -i=__TRACKED_VAR__/h -fo=game.obj src/game.c)",
+      "Bash(wlink name *)",
+      "Bash(rm -f *.obj WORDLE.EXE)",
+      "Bash(wmake)",
+      "Bash(awk 'length\\($0\\)==5 && /^[A-Z]+$/' /Users/jarrod/github/wordlelx/words/ENGLISH.DAT)",
+      "Bash(awk ' BEGIN { print \"/* Word list compiled in — no external DAT file needed */\" print \"\" print \"#include \\\\\"words.h\\\\\"\" print \"\" print \"static const char * const word_list[] = {\" } { printf \" \\\\\"%s\\\\\",\\\\n\", $0 } END { print \" 0\" print \"};\" print \"\" print \"static const int word_list_count =\" print \" \\(int\\)\\(sizeof\\(word_list\\) / sizeof\\(word_list[0]\\)\\) - 1;\" print \"\" print \"int words_count\\(void\\) { return word_list_count; }\" print \"const char *words_get\\(int i\\)\" print \"{\" print \" return \\(i >= 0 && i < word_list_count\\) ? word_list[i] : 0;\" print \"}\" }')",
+      "Bash(dosbox-x --help)",
+      "Bash(mdfind -name \"dosbox-x\")",
+      "Bash(/Applications/dosbox-x.app/Contents/MacOS/dosbox-x --help)",
+      "Bash(/Applications/dosbox-x.app/Contents/MacOS/dosbox-x -silent -conf /Users/jarrod/github/wordlelx/exm/dosbox-e2m-batch.conf)",
+      "Bash(echo \"exit code: $?\")",
+      "Bash(xxd /Users/jarrod/github/EXM/TSR/SETUP.ENV)",
+      "Bash(xxd /Users/jarrod/github/EXM/TSR/JQBTAUS.RI)",
+      "Bash(EXEFILE)",
+      "Bash(grep -A3 \"link\\\\|LINK\\\\|$\\(EXEFILE\\)\" /Users/jarrod/github/EXM/SAMPLES/HEXCALC/COUGAR.MAK)",
+      "Bash(/Applications/dosbox-x.app/Contents/MacOS/dosbox-x -conf dosbox-e2m-batch.conf)",
+      "Bash(kill %1)",
+      "Bash(wdump -a /Users/jarrod/github/wordlelx/exm/wordlelx.exe)",
+      "Bash(python3 /Users/jarrod/github/wordlelx/exm/convert_wlink_map.py /Users/jarrod/github/wordlelx/exm/wordlelx.wlkmap /Users/jarrod/github/wordlelx/exm/wordlelx.map)"
+    ],
+    "additionalDirectories": [
+      "/Users/jarrod/watcom-src",
+      "/Users/jarrod/github/wordlelx"
+    ]
+  }
+}

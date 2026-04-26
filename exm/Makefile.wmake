@@ -1,0 +1,81 @@
+# wmake Makefile for WORDLE LX EXM — HP 200LX System Manager Application
+# Uses OpenWatcom wcc/wlink on macOS, then E2M inside DOSBox-X.
+#
+# Prerequisites:
+#   1. OpenWatcom sourced: . ../env-watcom.sh
+#   2. EXM repo at /Users/jarrod/github/EXM  (already cloned)
+#   3. DOSBox-X for E2M conversion and System Manager testing
+#
+# Targets:
+#   wmake           - compile + link wordlelx.exe
+#   wmake exm       - run E2M via DOSBox-X (headless) -> wordlelx.exm
+#   wmake run       - compile + E2M + launch TKERNEL for interactive testing
+#   wmake clean     - remove build artifacts
+
+EXM_ROOT = /Users/jarrod/github/EXM
+INC      = $(EXM_ROOT)/HEADERS
+LIB      = $(EXM_ROOT)/LIBS
+SRC      = ../src
+
+# OpenWatcom small model, 80186, cdecl convention (-ecc), no stack checks (-s)
+# -ecc: use cdecl (Microsoft compatible) for function calls into EXM libs
+# -s:   suppress stack overflow checking (no __STK runtime needed)
+CFLAGS   = -ms -1 -bt=dos -os -w4 -ecc -s &
+           -DPCKEYBOARD -DTKERNEL -DAPI2 &
+           -i=$(INC) -i=$(SRC)
+
+# OpenWatcom 16-bit DOS libraries (small model, cdecl)
+# $(WATCOM) is set by env-watcom.sh; clibs.lib provides rand_, memset_, etc.
+WATCOM_LIB = $(%WATCOM)/lib286/dos
+
+EXMLIBS  = $(LIB)/captko.lib $(LIB)/mlhstub.lib $(LIB)/tsr.lib
+WLIBS    = $(WATCOM_LIB)/clibs.lib
+
+OBJS     = exm_main.obj exm_display.obj game.obj words.obj
+TARGET   = wordlelx.exe
+MAPFILE  = WORDLELX.MAP
+
+all : $(TARGET)
+
+$(TARGET) : $(OBJS)
+	wlink name $@ format dos option nodefaultlibs option quiet &
+	    option map=wordlelx.wlkmap &
+	    option stack=4096 &
+	    file exm_main.obj,exm_display.obj,game.obj,words.obj &
+	    library $(LIB)/captko.lib,$(LIB)/mlhstub.lib,$(LIB)/tsr.lib &
+	    library $(WATCOM_LIB)/clibs.lib
+
+$(MAPFILE) : $(TARGET) wordlelx.wlkmap
+	/usr/bin/python3 convert_wlink_map.py wordlelx.wlkmap $(MAPFILE)
+
+exm_main.obj : exm_main.c exm_display.h
+	wcc $(CFLAGS) -fo=$@ exm_main.c
+
+exm_display.obj : exm_display.c exm_display.h
+	wcc $(CFLAGS) -fo=$@ exm_display.c
+
+game.obj : $(SRC)/game.c $(SRC)/game.h
+	wcc $(CFLAGS) -fo=$@ $(SRC)/game.c
+
+words.obj : $(SRC)/words.c $(SRC)/words.h
+	wcc $(CFLAGS) -fo=$@ $(SRC)/words.c
+
+DOSBOX = /Applications/dosbox-x.app/Contents/MacOS/dosbox-x
+
+WORDLELX_ICN = WORDLELX.ICN
+
+$(WORDLELX_ICN) : make_icon.py .SYMBOLIC
+	/usr/bin/python3 make_icon.py
+
+# Run E2M inside DOSBox-X silently to produce wordlelx.exm
+exm : $(TARGET) $(MAPFILE) $(WORDLELX_ICN) .SYMBOLIC
+	$(DOSBOX) -silent -conf dosbox-e2m-batch.conf
+
+# Interactive: convert + launch TKERNEL for System Manager testing
+run : $(TARGET) $(MAPFILE) .SYMBOLIC
+	$(DOSBOX) -conf dosbox-exm.conf
+
+clean : .SYMBOLIC
+	rm -f $(OBJS)
+	rm -f $(TARGET)
+	rm -f *.exm *.map *.wlkmap *.err
