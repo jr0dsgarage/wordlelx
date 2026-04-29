@@ -1,138 +1,28 @@
-/* Official Wordle answer list (2315 words from Josh Wardle's original game) */
-
+#include <memory.h>
 #include "words.h"
+#include "worddata.h"
 
-static const char * const word_list[] = {
-    "ABACK", "ABASE", "ABATE", "ABBEY", "ABBOT", "ABHOR", "ABIDE", "ABLER",
-    "ABODE", "ABORT", "ABOUT", "ABOVE", "ABUSE", "ABYSS", "ACIDS", "ACORN",
-    "ACRID", "ACTED", "ACUTE", "ADAGE", "ADAPT", "ADEPT", "ADMIT", "ADOBE",
-    "ADOPT", "ADORE", "ADORN", "ADULT", "AFFIX", "AFTER", "AGAIN", "AGATE",
-    "AGAVE", "AGENT", "AGILE", "AGING", "AGLOW", "AGONY", "AGORA", "AGREE",
-    "AHEAD", "AISLE", "ALARM", "ALBUM", "ALERT", "ALGAE", "ALIBI", "ALIEN",
-    "ALIGN", "ALIKE", "ALIVE", "ALLAY", "ALLEY", "ALLOT", "ALLOW", "ALLOY",
-    "ALOFT", "ALONE", "ALONG", "ALOOF", "ALOUD", "ALPHA", "ALTAR", "ALTER",
-    "AMBER", "AMBLE", "AMEND", "AMISS", "AMONG", "AMPLE", "AMUSE", "ANGEL",
-    "ANGER", "ANGLE", "ANGRY", "ANGST", "ANIME", "ANKLE", "ANNEX", "ANTIC",
-    "ANVIL", "AORTA", "APART", "APHID", "APPLE", "APPLY", "APRON", "APTLY",
-    "ARBOR", "ARDOR", "ARENA", "ARGUE", "ARISE", "ARMOR", "AROMA", "AROSE",
-    "ARRAY", "ARROW", "ARSON", "ARTSY", "ASCOT", "ASHES", "ASKEW", "ASSET",
-    "ATONE", "ATTIC", "AUDIO", "AUDIT", "AUGUR", "AUNTS", "AVAIL", "AVERT",
-    "AVOID", "AWAKE", "AWARD", "AWARE", "AWFUL", "AWOKE", "AXIOM", "AZURE",
-    "BACON", "BADLY", "BAGEL", "BAGGY", "BAIZE", "BAKED", "BAKER", "BALER",
-    "BALMY", "BANAL", "BANDY", "BANJO", "BARON", "BASIN", "BASTE", "BATCH",
-    "BATHE", "BATON", "BAWDY", "BAYOU", "BEACH", "BEADY", "BEARD", "BEAST",
-    "BEECH", "BEEFY", "BEGAN", "BEIGE", "BEING", "BELLE", "BELLY", "BELOW",
-    "BENCH", "BERTH", "BESET", "BEZEL", "BIBLE", "BICEP", "BIGOT", "BILGE",
-    "BIRCH", "BIRTH", "BISON", "BITER", "BLAND", "BLANK", "BLARE", "BLAZE",
-    "BLEAK", "BLEAT", "BLEED", "BLEND", "BLESS", "BLIMP", "BLINK", "BLISS",
-    "BLOAT", "BLOOD", "BLOOM", "BLOWN", "BLUES", "BLUNT", "BLURB", "BLURT",
-    "BLUSH", "BONUS", "BOOBY", "BOOST", "BOOTH", "BOOZE", "BORAX", "BORED",
-    "BOXER", "BRAID", "BRAIN", "BRAND", "BRASH", "BRAWL", "BRAWN", "BREAM",
-    "BRIBE", "BRIDE", "BRINE", "BRINK", "BRINY", "BRISK", "BROIL", "BROKE",
-    "BROOK", "BROOM", "BROTH", "BROWN", "BRUNT", "BRUTE", "BUGGY", "BUILD",
-    "BUILT", "BULGE", "BUMPY", "BUNNY", "BURLY", "BURNT", "BURST", "BUYER",
-    "BYLAW", "CABAL", "CACHE", "CAMEL", "CAMEO", "CANDY", "CARGO", "CARVE",
-    "CATCH", "CAUSE", "CEDAR", "CHAIN", "CHALK", "CHAMP", "CHAOS", "CHASE",
-    "CHEAP", "CHEAT", "CHEEK", "CHEER", "CHESS", "CHEST", "CHIDE", "CHILL",
-    "CHIMP", "CHOIR", "CHORD", "CHORE", "CHOSE", "CHUNK", "CIVIC", "CIVIL",
-    "CLAMP", "CLANG", "CLASH", "CLASP", "CLASS", "CLEAN", "CLEAR", "CLERK",
-    "CLICK", "CLIFF", "CLING", "CLOAK", "CLONE", "CLOSE", "CLOTH", "CLOUD",
-    "CLOWN", "CLUCK", "CLUED", "CLUMP", "COAST", "COBRA", "COMET", "COMIC",
-    "COMMA", "CORAL", "CORER", "COUCH", "COUGH", "COUPE", "COURT", "COVET",
-    "CRANE", "CRAZE", "CRAZY", "CREAM", "CREEK", "CREEP", "CREST", "CRISP",
-    "CROSS", "CROWD", "CROWN", "CRUDE", "CRUEL", "CRUSH", "CRUST", "CRYPT",
-    "CUBIC", "CUMIN", "CUPID", "CURLY", "CURRY", "CURVE", "CYCLE", "CYNIC",
-    "DAILY", "DAIRY", "DAISY", "DANCE", "DATUM", "DAUNT", "DEALT", "DEBUT",
-    "DECAL", "DECOY", "DEFER", "DELTA", "DENSE", "DEPOT", "DEPTH", "DERBY",
-    "DIGIT", "DINER", "DINGY", "DISCO", "DODGE", "DOGMA", "DOING", "DOUBT",
-    "DOUGH", "DOWDY", "DRAFT", "DRAIN", "DRAPE", "DRAWL", "DREAD", "DRINK",
-    "DRIVE", "DROIT", "DROWN", "DULLY", "DUMPY", "DUNCE", "DUVET", "DWARF",
-    "DYING", "EAGLE", "EARLY", "EARTH", "EIGHT", "ELITE", "EMBER", "EMCEE",
-    "ENACT", "EPOCH", "EPOXY", "ERODE", "ERUPT", "ESSAY", "EVADE", "EVOKE",
-    "EXACT", "EXERT", "EXILE", "EXULT", "EXTRA", "FABLE", "FACET", "FAINT",
-    "FAITH", "FALSE", "FANCY", "FARCE", "FATAL", "FAULT", "FEAST", "FETAL",
-    "FETCH", "FIBER", "FIERY", "FIFTH", "FIFTY", "FIGHT", "FLAIR", "FLAKE",
-    "FLAME", "FLANK", "FLARE", "FLASK", "FLESH", "FLICK", "FLOCK", "FLOOD",
-    "FLORA", "FLOUR", "FLOWN", "FLUFF", "FLUKE", "FLUNG", "FLUTE", "FOAMY",
-    "FOCAL", "FORAY", "FORGE", "FORTH", "FORUM", "FOUND", "FRAIL", "FRAME",
-    "FRANK", "FRAUD", "FREAK", "FRESH", "FROTH", "FROZE", "FRUIT", "FULLY",
-    "FUNGI", "FUNNY", "GAUGE", "GAVEL", "GECKO", "GEODE", "GHOST", "GIDDY",
-    "GIRTH", "GLEAM", "GLEAN", "GLIDE", "GLINT", "GLOAT", "GLOOM", "GLOSS",
-    "GLOVE", "GLYPH", "GNARL", "GNOME", "GOLEM", "GOOSE", "GOUGE", "GOURD",
-    "GRACE", "GRAIN", "GRAND", "GRANT", "GRASP", "GRATE", "GRAZE", "GREED",
-    "GRIEF", "GRIME", "GRIPE", "GROAN", "GROIN", "GROOM", "GROPE", "GROSS",
-    "GROUP", "GROUT", "GROVE", "GROWN", "GRUFF", "GRUMP", "GUAVA", "GUILE",
-    "GUISE", "GULCH", "GULLY", "GUSTO", "GUSTY", "GYPSY", "HAIKU", "HALVE",
-    "HARSH", "HASTE", "HAVEN", "HAVOC", "HEART", "HEDGE", "HEFTY", "HEIST",
-    "HERON", "HIPPO", "HITCH", "HOARD", "HOLLY", "HOMER", "HONEY", "HONOR",
-    "HOTEL", "HOUND", "HUMID", "HUMOR", "HUSKY", "HYENA", "IDEAL", "IDIOM",
-    "IDIOT", "INEPT", "INERT", "INFER", "INGOT", "INLET", "INPUT", "INTER",
-    "INTRO", "IONIC", "IRONY", "ISSUE", "ITCHY", "IVORY", "JAZZY", "JOUST",
-    "JUDGE", "JUICY", "JUMPY", "KEBAB", "KNACK", "KNAVE", "KNEEL", "KNELT",
-    "KNIFE", "KNOCK", "KUDOS", "LABEL", "LANCE", "LANKY", "LAPEL", "LAPSE",
-    "LASER", "LATHE", "LAYER", "LEAKY", "LEARN", "LEASE", "LEASH", "LEAVE",
-    "LEDGE", "LEGAL", "LEMON", "LIBEL", "LIGHT", "LILAC", "LIMBO", "LINEN",
-    "LINER", "LINGO", "LIVER", "LOFTY", "LOGIC", "LORRY", "LOTUS", "LOVER",
-    "LOYAL", "LUCID", "LUCKY", "LUNAR", "LUNGE", "LUSTY", "LYRIC", "MACHO",
-    "MAGIC", "MAMBO", "MAPLE", "MARCH", "MARSH", "MATCH", "MAXIM", "MAYOR",
-    "MEALY", "MEDIA", "MELEE", "MELON", "MERCY", "MERGE", "MESSY", "MIGHT",
-    "MIMIC", "MINOR", "MINUS", "MIRTH", "MISER", "MITRE", "MOIST", "MOLDY",
-    "MONEY", "MOODY", "MOOSE", "MORAL", "MOSSY", "MOTIF", "MOURN", "MOUTH",
-    "MUDDY", "MURAL", "MURKY", "MUSTY", "MYRRH", "NAIVE", "NANNY", "NAVAL",
-    "NERVY", "NIGHT", "NINJA", "NOBLE", "NOISE", "NORTH", "NOTCH", "NUDGE",
-    "NYMPH", "OCCUR", "OCTET", "ONSET", "OPERA", "OPTIC", "ORBIT", "ORGAN",
-    "OTHER", "OTTER", "OVARY", "OXIDE", "OZONE", "PADDY", "PAINT", "PAPAL",
-    "PAPER", "PATIO", "PAUSE", "PEACE", "PEACH", "PEARL", "PEDAL", "PERCH",
-    "PETTY", "PHASE", "PIANO", "PILOT", "PINCH", "PIOUS", "PIXEL", "PIZZA",
-    "PLACE", "PLAID", "PLAIN", "PLAIT", "PLANE", "PLANT", "PLEAD", "PLEAT",
-    "PLUCK", "PLUMB", "PLUME", "PLUMP", "PLUNK", "PLUSH", "POKER", "POLYP",
-    "POPPY", "PORCH", "POUCH", "POUTY", "PREEN", "PRESS", "PRICE", "PRICK",
-    "PRIDE", "PRIME", "PRISM", "PRIVY", "PROBE", "PRONG", "PROOF", "PROSE",
-    "PROUD", "PROVE", "PROWL", "PRUDE", "PRUNE", "PSALM", "PULSE", "PUNCH",
-    "PUPIL", "PYGMY", "QUEEN", "QUERY", "QUEUE", "QUILL", "QUIRK", "QUOTA",
-    "QUOTE", "RABBI", "RABID", "RADAR", "RAINY", "RALLY", "RAMEN", "RANCH",
-    "RASPY", "RAVEN", "REACH", "REALM", "REBEL", "REBUS", "RELAX", "RELAY",
-    "RELIC", "RENEW", "REPAY", "REPEL", "RESIN", "RETRO", "REVEL", "RIDER",
-    "RIDGE", "RISKY", "RIVAL", "RIVET", "ROBIN", "ROCKY", "ROUGE", "ROUGH",
-    "ROUND", "ROUSE", "ROVER", "ROWDY", "RUGBY", "RULER", "RURAL", "RUSTY",
-    "SADLY", "SAINT", "SALAD", "SAUCE", "SAUNA", "SAVVY", "SCALD", "SCALP",
-    "SCANT", "SCARY", "SCENE", "SCONE", "SCOOP", "SCORN", "SCOUT", "SCOWL",
-    "SCRAM", "SCRUB", "SEIZE", "SERVE", "SETUP", "SHACK", "SHADY", "SHAKE",
-    "SHALL", "SHAME", "SHAPE", "SHARE", "SHARK", "SHARP", "SHAWL", "SHEEN",
-    "SHELF", "SHELL", "SHIFT", "SHIRK", "SHONE", "SHOUT", "SHOVE", "SHOWN",
-    "SHRUB", "SIEGE", "SISSY", "SIXTH", "SIXTY", "SKILL", "SKIMP", "SKULL",
-    "SKUNK", "SLACK", "SLAIN", "SLANT", "SLASH", "SLEEK", "SLEEP", "SLEET",
-    "SLICK", "SLIME", "SLOPE", "SLOTH", "SLUMP", "SLURP", "SLYLY", "SMART",
-    "SMEAR", "SMELL", "SMELT", "SMIRK", "SMITE", "SMOKE", "SNACK", "SNARE",
-    "SNARL", "SNEAK", "SNIDE", "SNORT", "SOLVE", "SONIC", "SORRY", "SOUTH",
-    "SPAWN", "SPEAK", "SPEAR", "SPECK", "SPEED", "SPEND", "SPICE", "SPICY",
-    "SPILL", "SPINE", "SPITE", "SPLIT", "SPOIL", "SPOOL", "SPRAY", "SPREE",
-    "STAID", "STAIN", "STALE", "STALL", "STARK", "STERN", "STICK", "STING",
-    "STINK", "STOMP", "STONE", "STORK", "STORM", "STORY", "STOUT", "STOVE",
-    "STRAP", "STRAY", "STUCK", "STUMP", "STUNG", "STUNT", "SUITE", "SUMAC",
-    "SUNNY", "SUPER", "SWAMP", "SWARM", "SWATH", "SWEAR", "SWEAT", "SWEEP",
-    "SWELL", "SWIPE", "SWIRL", "SWORD", "SYNOD", "TABOO", "TAFFY", "TAPIR",
-    "TARDY", "TAUNT", "TEPID", "THANK", "THEME", "THICK", "THORN", "THROB",
-    "TIARA", "TIMID", "TINGE", "TIPSY", "TITLE", "TOAST", "TOKEN", "TONAL",
-    "TONIC", "TOPAZ", "TORSO", "TOTAL", "TOTEM", "TOUCH", "TOUGH", "TOXIN",
-    "TRACE", "TRACK", "TRADE", "TRAIL", "TRAIN", "TRAIT", "TRAMP", "TRASH",
-    "TREAD", "TREND", "TRIAD", "TRICK", "TRITE", "TROVE", "TRUCE", "TRUST",
-    "TRUTH", "TULIP", "TUNIC", "TWANG", "TWICE", "TWIRL", "TYING", "ULCER",
-    "ULTRA", "UNCLE", "UNDUE", "UNFIT", "UNITE", "UNTIL", "UPSET", "USHER",
-    "UTTER", "VALID", "VALUE", "VALVE", "VAPOR", "VAULT", "VENOM", "VERGE",
-    "VIGOR", "VIRAL", "VISIT", "VISOR", "VISTA", "VITAL", "VIVID", "VIXEN",
-    "VOCAL", "VODKA", "VOTER", "VYING", "WALTZ", "WAVER", "WEARY", "WEAVE",
-    "WEDGE", "WEIRD", "WHACK", "WHEAT", "WHILE", "WHIFF", "WIELD", "WINCE",
-    "WINDY", "WITCH", "WITTY", "WOMAN", "WORLD", "WRATH", "WRING", "WRITE",
-    "WROTE", "YACHT", "YEARN", "YIELD", "YOUNG", "YOURS", "ZEBRA", "ZESTY",
-    0
-};
+static char word_buf[WORD_LEN + 1];
 
-static const int word_list_count =
-    (int)(sizeof(word_list) / sizeof(word_list[0])) - 1;
+int words_count(void) { return worddata_answer_count; }
 
-int         words_count(void) { return word_list_count; }
 const char *words_get(int i)
 {
-    return (i >= 0 && i < word_list_count) ? word_list[i] : 0;
+    if (i < 0 || i >= worddata_answer_count || !worddata_answers) return 0;
+    _fmemcpy(word_buf, worddata_answers + (unsigned)i * WORD_LEN, WORD_LEN);
+    word_buf[WORD_LEN] = '\0';
+    return word_buf;
+}
+
+int words_contains(const char *word)
+{
+    int lo = 0, hi = worddata_answer_count - 1, mid, cmp;
+    while (lo <= hi) {
+        mid = (lo + hi) / 2;
+        cmp = _fmemcmp(word, worddata_answers + (unsigned)mid * WORD_LEN, WORD_LEN);
+        if (cmp == 0) return 1;
+        if (cmp < 0)  hi = mid - 1;
+        else          lo = mid + 1;
+    }
+    return 0;
 }

@@ -1,0 +1,24 @@
+=== WORDLELX Initialize
+  _LpPgmName=[]
+--- worddata_try_load state=0
+  _LpPgmName=[]
+  CWD=[C:\_DAT]
+  PTR=[C:\GAMES]
+  try [C:\GAMES\WORDLELX.DAT]
+  ptr load: 1
+  LOADED ok
+start_new_game: cnt=2315 idx=383 word=[CHOSE]
+  gs.answer=[CHOSE]
+do_submit: ans=[] guess=[GUESS]
+  after score: ans=[] over=0
+do_submit: ans=[] guess=[STARE]
+  after score: ans=[] over=0
+do_submit: ans=[] guess=[PHASE]
+  after score: ans=[] over=0
+do_submit: ans=[] guess=[THOSE]
+  after score: ans=[] over=0
+do_submit: ans=[] guess=[CHOSE]
+  after score: ans=[] over=0
+do_submit: ans=[] guess=[CLOSE]
+  after score: ans=[] over=1
+show_game_over: won=0 answer=[]

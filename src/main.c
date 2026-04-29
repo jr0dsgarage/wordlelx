@@ -27,6 +27,8 @@ static int getch(void)
 #include "game.h"
 #include "display.h"
 #include "words.h"
+#include "guesses.h"
+#include "worddata.h"
 
 /* ---- Main game loop ----
  * Returns 1 when the game ends naturally (won or lost).
@@ -43,11 +45,20 @@ static int run_game(GameState *gs, Display *d)
 
         } else if (key == '\r' || key == '\n') { /* Enter — submit */
             if (gs->input_len == WORD_LEN) {
-                game_score_guess(gs, gs->input);
-                gs->input_len = 0;
-                memset(gs->input, 0, sizeof(gs->input));
-                d->draw_board(gs);
-                d->draw_keyboard(gs);
+                if (!words_contains(gs->input) && !guesses_is_valid(gs->input)) {
+                    char msg[40];
+                    sprintf(msg, "\"%s\" is not a valid guess!", gs->input);
+                    gs->input_len = 0;
+                    memset(gs->input, 0, sizeof(gs->input));
+                    d->draw_board(gs);
+                    d->draw_message(msg);
+                } else {
+                    game_score_guess(gs, gs->input);
+                    gs->input_len = 0;
+                    memset(gs->input, 0, sizeof(gs->input));
+                    d->draw_board(gs);
+                    d->draw_keyboard(gs);
+                }
             } else {
                 d->draw_message("Need 5 letters");
             }
@@ -72,12 +83,17 @@ static int run_game(GameState *gs, Display *d)
 
 /* ---- Entry point ---- */
 
-int main(void)
+int main(int argc, char *argv[])
 {
     Display   disp;
     GameState gs;
     int       word_index;
     const char *answer;
+
+    if (!worddata_load_sibling(argc > 0 ? argv[0] : 0)) {
+        fprintf(stderr, "Cannot find WORDLELX.DAT\n");
+        return 1;
+    }
 
     srand((unsigned int)time(NULL));
     text_mode_init_display(&disp);

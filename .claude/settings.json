@@ -43,11 +43,24 @@
       "Bash(/Applications/dosbox-x.app/Contents/MacOS/dosbox-x -conf dosbox-e2m-batch.conf)",
       "Bash(kill %1)",
       "Bash(wdump -a /Users/jarrod/github/wordlelx/exm/wordlelx.exe)",
-      "Bash(python3 /Users/jarrod/github/wordlelx/exm/convert_wlink_map.py /Users/jarrod/github/wordlelx/exm/wordlelx.wlkmap /Users/jarrod/github/wordlelx/exm/wordlelx.map)"
+      "Bash(python3 /Users/jarrod/github/wordlelx/exm/convert_wlink_map.py /Users/jarrod/github/wordlelx/exm/wordlelx.wlkmap /Users/jarrod/github/wordlelx/exm/wordlelx.map)",
+      "Bash(xargs ls *)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/tabatkins/wordle-list/main/words\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s \"https://gist.githubusercontent.com/cfreshman/cdcdf9dfc17010c4b21c4ebf95c5efb4/raw/25cc6e32f3c5e0c1c90b0e3f6c8ee9e9f5c5e5c5/wordle-nyt-answers.txt\")",
+      "Bash(curl -s \"https://gist.githubusercontent.com/cfreshman/a7b776506c73284511f4146976ca9221/raw/5b6d6c66b92de0fd67d692470db4cbbbf1cd2e45/wordle_answers_alphabetical.txt\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/stuartpb/wordles/main/answers.json\")",
+      "Bash(curl -s \"https://gist.githubusercontent.com/pingween/b30f727981759860e75d49bdc9fc9b7b/raw/2c49d3fffc2e21e26f42c898cb3e9bd56c4a15d8/answers.txt\")",
+      "Bash(curl -s \"https://gist.githubusercontent.com/cfreshman/dec102adb5e60a8299857cbf78f6cf57/raw/wordle_answers_alphabetical.txt\")",
+      "WebFetch(domain:gist.github.com)",
+      "Bash(curl -s \"https://gist.githubusercontent.com/cfreshman/a03ef2cba789d8cf00c08f767e0fad7b/raw/c46f451920d5cf6326d550fb2d6abb1642717852/wordle-answers-alphabetical.txt\")",
+      "Bash(gh api *)",
+      "Bash(python3 /dev/stdin)"
     ],
     "additionalDirectories": [
       "/Users/jarrod/watcom-src",
-      "/Users/jarrod/github/wordlelx"
+      "/Users/jarrod/github/wordlelx",
+      "/tmp"
     ]
   }
 }

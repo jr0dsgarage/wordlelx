@@ -31,7 +31,7 @@ WATCOM_LIB = $(%WATCOM)/lib286/dos
 EXMLIBS  = $(LIB)/captko.lib $(LIB)/mlhstub.lib $(LIB)/tsr.lib
 WLIBS    = $(WATCOM_LIB)/clibs.lib
 
-OBJS     = exm_main.obj exm_display.obj game.obj words.obj
+OBJS     = exm_main.obj exm_display.obj game.obj worddata.obj words.obj guesses.obj
 TARGET   = wordlelx.exe
 MAPFILE  = WORDLELX.MAP
 
@@ -40,8 +40,8 @@ all : $(TARGET)
 $(TARGET) : $(OBJS)
 	wlink name $@ format dos option nodefaultlibs option quiet &
 	    option map=wordlelx.wlkmap &
-	    option stack=4096 &
-	    file exm_main.obj,exm_display.obj,game.obj,words.obj &
+	    option stack=8192 &
+	    file exm_main.obj,exm_display.obj,game.obj,worddata.obj,words.obj,guesses.obj &
 	    library $(LIB)/captko.lib,$(LIB)/mlhstub.lib,$(LIB)/tsr.lib &
 	    library $(WATCOM_LIB)/clibs.lib
 
@@ -57,8 +57,14 @@ exm_display.obj : exm_display.c exm_display.h
 game.obj : $(SRC)/game.c $(SRC)/game.h
 	wcc $(CFLAGS) -fo=$@ $(SRC)/game.c
 
-words.obj : $(SRC)/words.c $(SRC)/words.h
+worddata.obj : $(SRC)/worddata.c $(SRC)/worddata.h
+	wcc $(CFLAGS) -fo=$@ $(SRC)/worddata.c
+
+words.obj : $(SRC)/words.c $(SRC)/words.h $(SRC)/worddata.h
 	wcc $(CFLAGS) -fo=$@ $(SRC)/words.c
+
+guesses.obj : $(SRC)/guesses.c $(SRC)/guesses.h $(SRC)/worddata.h
+	wcc $(CFLAGS) -fo=$@ $(SRC)/guesses.c
 
 DOSBOX = /Applications/dosbox-x.app/Contents/MacOS/dosbox-x
 
