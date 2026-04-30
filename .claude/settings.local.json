@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebSearch",
-      "WebFetch(domain:web.navan.dev)",
-      "WebFetch(domain:retrocoding.net)"
-    ]
-  }
-}

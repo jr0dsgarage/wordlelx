@@ -1,5 +1,7 @@
 output/
 build/
+.claude/
+.github/
 *.obj
 *.o
 *.err
