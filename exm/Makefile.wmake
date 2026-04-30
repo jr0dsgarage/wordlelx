@@ -12,13 +12,17 @@
 #   wmake run       - compile + E2M + launch TKERNEL for interactive testing
 #   wmake clean     - remove build artifacts
 
-EXM_ROOT ?= ../EXM
+!ifndef EXM_ROOT
+EXM_ROOT = ../../EXM
+!endif
 INC      = $(EXM_ROOT)/HEADERS
 LIB      = $(EXM_ROOT)/LIBS
 SRC      = ../src
 OUTDIR   = ../output
 BUILDDIR = ../build/exm
-PYTHON   ?= python3
+!ifndef PYTHON
+PYTHON   = python3
+!endif
 
 # OpenWatcom small model, 80186, cdecl convention (-ecc), no stack checks (-s)
 # -ecc: use cdecl (Microsoft compatible) for function calls into EXM libs
@@ -74,7 +78,9 @@ $(BUILDDIR)/words.obj : $(SRC)/words.c $(SRC)/words.h $(SRC)/worddata.h
 $(BUILDDIR)/guesses.obj : $(SRC)/guesses.c $(SRC)/guesses.h $(SRC)/worddata.h
 	wcc $(CFLAGS) -fo=$@ $(SRC)/guesses.c
 
-DOSBOX ?= dosbox-x
+!ifndef DOSBOX
+DOSBOX = /Applications/DOSBox-X.app/Contents/MacOS/dosbox-x
+!endif
 
 WORDLELX_ICN = $(OUTDIR)/WORDLELX.ICN
 

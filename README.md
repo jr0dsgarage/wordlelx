@@ -47,6 +47,7 @@ This project was created using Claude Code and is set up to build with OpenWatco
 - OpenWatcom v2
 - DOSBox-X available on your `PATH` as `dosbox-x`
 - The EXM SDK repository checked out at `../EXM`, or `EXM_ROOT` set explicitly
+ - EXM SDK: https://github.com/200lx/EXM
 
 Supported host environments:
 

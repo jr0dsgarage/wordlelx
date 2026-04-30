@@ -7,7 +7,9 @@
 CC     = wcc
 LD     = wlink
 CFLAGS = -0 -mm -bt=dos -os -wx -isrc
-DOSBOX ?= dosbox-x
+!ifndef DOSBOX
+DOSBOX = /Applications/DOSBox-X.app/Contents/MacOS/dosbox-x
+!endif
 
 OUTDIR   = output
 BUILDDIR = build/dos
