@@ -1,6 +1,6 @@
-#!/bin/zsh
+#!/bin/sh
 # Source this before building: . ./env-watcom.sh
-export WATCOM="$HOME/watcom-src/rel"
+export WATCOM="${WATCOM:-$HOME/watcom-src/rel}"
 export PATH="$WATCOM/armo64:$PATH"
 export INCLUDE="$WATCOM/h"   # wcc requires this to find system headers
 echo "OpenWatcom ready.  Run: wmake        (build)"

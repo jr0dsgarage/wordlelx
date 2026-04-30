@@ -7,11 +7,12 @@
 CC     = wcc
 LD     = wlink
 CFLAGS = -0 -mm -bt=dos -os -wx -isrc
+DOSBOX ?= dosbox-x
 
 OUTDIR   = output
 BUILDDIR = build/dos
 OBJS     = $(BUILDDIR)/game.obj $(BUILDDIR)/worddata.obj $(BUILDDIR)/words.obj $(BUILDDIR)/guesses.obj $(BUILDDIR)/text_mode.obj $(BUILDDIR)/main.obj
-TARGET   = $(OUTDIR)/WORDLELX.EXE
+TARGET   = $(OUTDIR)/WORDLDOS.EXE
 
 .BEFORE
 	mkdir -p $(OUTDIR)
@@ -47,7 +48,7 @@ $(BUILDDIR)/main.obj : src/main.c src/game.h src/display.h src/words.h src/guess
 	$(CC) $(CFLAGS) -fo=$@ src/main.c
 
 run : $(TARGET)
-	/Applications/dosbox-x.app/Contents/MacOS/dosbox-x -conf dosbox-x.conf
+	$(DOSBOX) -conf dosbox-x.conf
 
 clean : .SYMBOLIC
-	rm -f $(OBJS) $(TARGET) *.err *.map
+	rm -f $(OBJS) $(TARGET) $(OUTDIR)/WORDLELX.EXE *.err *.map

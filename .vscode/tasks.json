@@ -2,7 +2,7 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "build: exe (WORDLELX.EXE)",
+			"label": "build: exe (WORDLDOS.EXE)",
 			"type": "shell",
 			"command": "zsh",
 			"args": [
@@ -77,7 +77,7 @@
 			"dependsOn": [
 				"generate: word data (WORDLELX.DAT)",
 				"generate: icon (WORDLELX.ICN)",
-				"build: exe (WORDLELX.EXE)",
+				"build: exe (WORDLDOS.EXE)",
 				"build: exm package (WORDLELX.EXM)"
 			],
 			"dependsOrder": "sequence",

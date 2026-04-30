@@ -10,11 +10,11 @@
 			"cwd": "${workspaceFolder}"
 		},
 		{
-			"name": "Task: build exe (WORDLELX.EXE)",
+			"name": "Task: build exe (WORDLDOS.EXE)",
 			"type": "node-terminal",
 			"request": "launch",
 			"command": "echo Build task completed.",
-			"preLaunchTask": "build: exe (WORDLELX.EXE)",
+			"preLaunchTask": "build: exe (WORDLDOS.EXE)",
 			"cwd": "${workspaceFolder}"
 		},
 		{

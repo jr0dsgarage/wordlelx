@@ -1,9 +1,9 @@
 # wmake Makefile for WORDLE LX EXM — HP 200LX System Manager Application
-# Uses OpenWatcom wcc/wlink on macOS, then E2M inside DOSBox-X.
+# Uses OpenWatcom wcc/wlink, then E2M inside DOSBox-X.
 #
 # Prerequisites:
 #   1. OpenWatcom sourced: . ../env-watcom.sh
-#   2. EXM repo at /Users/jarrod/github/EXM  (already cloned)
+#   2. EXM repo at ../EXM (or set EXM_ROOT explicitly)
 #   3. DOSBox-X for E2M conversion and System Manager testing
 #
 # Targets:
@@ -12,12 +12,13 @@
 #   wmake run       - compile + E2M + launch TKERNEL for interactive testing
 #   wmake clean     - remove build artifacts
 
-EXM_ROOT = /Users/jarrod/github/EXM
+EXM_ROOT ?= ../EXM
 INC      = $(EXM_ROOT)/HEADERS
 LIB      = $(EXM_ROOT)/LIBS
 SRC      = ../src
 OUTDIR   = ../output
 BUILDDIR = ../build/exm
+PYTHON   ?= python3
 
 # OpenWatcom small model, 80186, cdecl convention (-ecc), no stack checks (-s)
 # -ecc: use cdecl (Microsoft compatible) for function calls into EXM libs
@@ -53,7 +54,7 @@ $(TARGET) : $(OBJS)
 	    library $(WATCOM_LIB)/clibs.lib
 
 $(MAPFILE) : $(TARGET) $(WLKMAP)
-	/usr/bin/python3 convert_wlink_map.py $(WLKMAP) $(MAPFILE)
+	$(PYTHON) convert_wlink_map.py $(WLKMAP) $(MAPFILE)
 
 $(BUILDDIR)/exm_main.obj : exm_main.c exm_display.h
 	wcc $(CFLAGS) -fo=$@ exm_main.c
@@ -73,12 +74,12 @@ $(BUILDDIR)/words.obj : $(SRC)/words.c $(SRC)/words.h $(SRC)/worddata.h
 $(BUILDDIR)/guesses.obj : $(SRC)/guesses.c $(SRC)/guesses.h $(SRC)/worddata.h
 	wcc $(CFLAGS) -fo=$@ $(SRC)/guesses.c
 
-DOSBOX = /Applications/dosbox-x.app/Contents/MacOS/dosbox-x
+DOSBOX ?= dosbox-x
 
 WORDLELX_ICN = $(OUTDIR)/WORDLELX.ICN
 
 $(WORDLELX_ICN) : ../make_icon.py .SYMBOLIC
-	/usr/bin/python3 ../make_icon.py $(OUTDIR)/WORDLELX.ICN
+	$(PYTHON) ../make_icon.py $(OUTDIR)/WORDLELX.ICN
 
 # Run E2M inside DOSBox-X silently to produce wordlelx.exm, then copy to output/
 exm : $(TARGET) $(MAPFILE) $(WORDLELX_ICN) .SYMBOLIC
