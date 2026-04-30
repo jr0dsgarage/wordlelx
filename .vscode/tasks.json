@@ -2,15 +2,92 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "build: exm package",
+			"label": "build: exe (WORDLELX.EXE)",
 			"type": "shell",
 			"command": "zsh",
 			"args": [
 				"-lc",
-				"export WATCOM=\"$HOME/watcom-src/rel\"; export PATH=\"$WATCOM/armo64:$PATH\"; export INCLUDE=\"$WATCOM/h\"; cd \"/Users/jarrod/github/wordlelx/exm\"; \"$WATCOM/armo64/wmake\" -f Makefile.wmake exm"
+				"export WATCOM=\"$HOME/watcom-src/rel\"; export PATH=\"$WATCOM/armo64:$PATH\"; export INCLUDE=\"$WATCOM/h\"; cd \"/Users/jarrod/github/wordlelx\"; \"$WATCOM/armo64/wmake\"; task_rc=$?; echo Task Complete; exit $task_rc"
 			],
 			"isBackground": false,
-			"group": "build"
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"close": true,
+				"showReuseMessage": false
+			}
+		},
+		{
+			"label": "build: exm package (WORDLELX.EXM)",
+			"type": "shell",
+			"command": "zsh",
+			"args": [
+				"-lc",
+				"export WATCOM=\"$HOME/watcom-src/rel\"; export PATH=\"$WATCOM/armo64:$PATH\"; export INCLUDE=\"$WATCOM/h\"; cd \"/Users/jarrod/github/wordlelx/exm\"; \"$WATCOM/armo64/wmake\" -f Makefile.wmake exm; task_rc=$?; echo Task Complete; exit $task_rc"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"close": true,
+				"showReuseMessage": false
+			}
+		},
+		{
+			"label": "generate: word data (WORDLELX.DAT)",
+			"type": "shell",
+			"command": "zsh",
+			"args": [
+				"-lc",
+				"mkdir -p \"/Users/jarrod/github/wordlelx/output\"; /usr/bin/python3 \"/Users/jarrod/github/wordlelx/make_dat.py\" \"/Users/jarrod/github/wordlelx/output/WORDLELX.DAT\"; task_rc=$?; echo Task Complete; exit $task_rc"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"close": true,
+				"showReuseMessage": false
+			}
+		},
+		{
+			"label": "generate: icon (WORDLELX.ICN)",
+			"type": "shell",
+			"command": "zsh",
+			"args": [
+				"-lc",
+				"mkdir -p \"/Users/jarrod/github/wordlelx/output\"; /usr/bin/python3 \"/Users/jarrod/github/wordlelx/make_icon.py\" \"/Users/jarrod/github/wordlelx/output/WORDLELX.ICN\"; task_rc=$?; echo Task Complete; exit $task_rc"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"close": true,
+				"showReuseMessage": false
+			}
+		},
+		{
+			"label": "Full Build",
+			"dependsOn": [
+				"generate: word data (WORDLELX.DAT)",
+				"generate: icon (WORDLELX.ICN)",
+				"build: exe (WORDLELX.EXE)",
+				"build: exm package (WORDLELX.EXM)"
+			],
+			"dependsOrder": "sequence",
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"close": true,
+				"showReuseMessage": false
+			}
 		}
 	]
 }

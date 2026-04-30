@@ -1,7 +1,15 @@
+output/
+build/
 *.obj
+*.o
 *.err
 *.exe
 *.EXE
+*.exm
+*.EXM
+*.icn
+*.ICN
 *.MAP
 *.map
+*.wlkmap
 .DS_Store

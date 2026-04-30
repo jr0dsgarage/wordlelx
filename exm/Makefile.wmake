@@ -16,6 +16,8 @@ EXM_ROOT = /Users/jarrod/github/EXM
 INC      = $(EXM_ROOT)/HEADERS
 LIB      = $(EXM_ROOT)/LIBS
 SRC      = ../src
+OUTDIR   = ../output
+BUILDDIR = ../build/exm
 
 # OpenWatcom small model, 80186, cdecl convention (-ecc), no stack checks (-s)
 # -ecc: use cdecl (Microsoft compatible) for function calls into EXM libs
@@ -31,51 +33,60 @@ WATCOM_LIB = $(%WATCOM)/lib286/dos
 EXMLIBS  = $(LIB)/captko.lib $(LIB)/mlhstub.lib $(LIB)/tsr.lib
 WLIBS    = $(WATCOM_LIB)/clibs.lib
 
-OBJS     = exm_main.obj exm_display.obj game.obj worddata.obj words.obj guesses.obj
-TARGET   = wordlelx.exe
-MAPFILE  = WORDLELX.MAP
+OBJS     = $(BUILDDIR)/exm_main.obj $(BUILDDIR)/exm_display.obj $(BUILDDIR)/game.obj $(BUILDDIR)/worddata.obj $(BUILDDIR)/words.obj $(BUILDDIR)/guesses.obj
+TARGET   = $(BUILDDIR)/wordlelx.exe
+WLKMAP   = $(BUILDDIR)/wordlelx.wlkmap
+MAPFILE  = $(BUILDDIR)/WORDLELX.MAP
+
+.BEFORE
+	mkdir -p $(OUTDIR)
+	mkdir -p $(BUILDDIR)
 
 all : $(TARGET)
 
 $(TARGET) : $(OBJS)
 	wlink name $@ format dos option nodefaultlibs option quiet &
-	    option map=wordlelx.wlkmap &
+	    option map=$(WLKMAP) &
 	    option stack=8192 &
-	    file exm_main.obj,exm_display.obj,game.obj,worddata.obj,words.obj,guesses.obj &
+	    file $(BUILDDIR)/exm_main.obj,$(BUILDDIR)/exm_display.obj,$(BUILDDIR)/game.obj,$(BUILDDIR)/worddata.obj,$(BUILDDIR)/words.obj,$(BUILDDIR)/guesses.obj &
 	    library $(LIB)/captko.lib,$(LIB)/mlhstub.lib,$(LIB)/tsr.lib &
 	    library $(WATCOM_LIB)/clibs.lib
 
-$(MAPFILE) : $(TARGET) wordlelx.wlkmap
-	/usr/bin/python3 convert_wlink_map.py wordlelx.wlkmap $(MAPFILE)
+$(MAPFILE) : $(TARGET) $(WLKMAP)
+	/usr/bin/python3 convert_wlink_map.py $(WLKMAP) $(MAPFILE)
 
-exm_main.obj : exm_main.c exm_display.h
+$(BUILDDIR)/exm_main.obj : exm_main.c exm_display.h
 	wcc $(CFLAGS) -fo=$@ exm_main.c
 
-exm_display.obj : exm_display.c exm_display.h
+$(BUILDDIR)/exm_display.obj : exm_display.c exm_display.h
 	wcc $(CFLAGS) -fo=$@ exm_display.c
 
-game.obj : $(SRC)/game.c $(SRC)/game.h
+$(BUILDDIR)/game.obj : $(SRC)/game.c $(SRC)/game.h
 	wcc $(CFLAGS) -fo=$@ $(SRC)/game.c
 
-worddata.obj : $(SRC)/worddata.c $(SRC)/worddata.h
+$(BUILDDIR)/worddata.obj : $(SRC)/worddata.c $(SRC)/worddata.h
 	wcc $(CFLAGS) -fo=$@ $(SRC)/worddata.c
 
-words.obj : $(SRC)/words.c $(SRC)/words.h $(SRC)/worddata.h
+$(BUILDDIR)/words.obj : $(SRC)/words.c $(SRC)/words.h $(SRC)/worddata.h
 	wcc $(CFLAGS) -fo=$@ $(SRC)/words.c
 
-guesses.obj : $(SRC)/guesses.c $(SRC)/guesses.h $(SRC)/worddata.h
+$(BUILDDIR)/guesses.obj : $(SRC)/guesses.c $(SRC)/guesses.h $(SRC)/worddata.h
 	wcc $(CFLAGS) -fo=$@ $(SRC)/guesses.c
 
 DOSBOX = /Applications/dosbox-x.app/Contents/MacOS/dosbox-x
 
-WORDLELX_ICN = WORDLELX.ICN
+WORDLELX_ICN = $(OUTDIR)/WORDLELX.ICN
 
-$(WORDLELX_ICN) : make_icon.py .SYMBOLIC
-	/usr/bin/python3 make_icon.py
+$(WORDLELX_ICN) : ../make_icon.py .SYMBOLIC
+	/usr/bin/python3 ../make_icon.py $(OUTDIR)/WORDLELX.ICN
 
-# Run E2M inside DOSBox-X silently to produce wordlelx.exm
+# Run E2M inside DOSBox-X silently to produce wordlelx.exm, then copy to output/
 exm : $(TARGET) $(MAPFILE) $(WORDLELX_ICN) .SYMBOLIC
+	cp $(TARGET) wordlelx.exe
+	cp $(MAPFILE) WORDLELX.MAP
 	$(DOSBOX) -silent -conf dosbox-e2m-batch.conf
+	cp WORDLELX.EXM $(OUTDIR)/WORDLELX.EXM
+	rm -f wordlelx.exe WORDLELX.MAP
 
 # Interactive: convert + launch TKERNEL for System Manager testing
 run : $(TARGET) $(MAPFILE) .SYMBOLIC
@@ -84,4 +95,6 @@ run : $(TARGET) $(MAPFILE) .SYMBOLIC
 clean : .SYMBOLIC
 	rm -f $(OBJS)
 	rm -f $(TARGET)
+	rm -f $(WLKMAP) $(MAPFILE)
 	rm -f *.exm *.map *.wlkmap *.err
+	rm -f $(OUTDIR)/WORDLELX.EXM $(OUTDIR)/WORDLELX.ICN

@@ -1,0 +1,45 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Task: Full Build",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "echo Full build task completed.",
+			"preLaunchTask": "Full Build",
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"name": "Task: build exe (WORDLELX.EXE)",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "echo Build task completed.",
+			"preLaunchTask": "build: exe (WORDLELX.EXE)",
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"name": "Task: build exm package (WORDLELX.EXM)",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "echo EXM package task completed.",
+			"preLaunchTask": "build: exm package (WORDLELX.EXM)",
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"name": "Task: generate word data (WORDLELX.DAT)",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "echo DAT generation task completed.",
+			"preLaunchTask": "generate: word data (WORDLELX.DAT)",
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"name": "Task: generate icon (WORDLELX.ICN)",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "echo ICN generation task completed.",
+			"preLaunchTask": "generate: icon (WORDLELX.ICN)",
+			"cwd": "${workspaceFolder}"
+		}
+	]
+}
