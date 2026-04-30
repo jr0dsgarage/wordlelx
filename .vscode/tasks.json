@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build: exm package",
+			"type": "shell",
+			"command": "zsh",
+			"args": [
+				"-lc",
+				"export WATCOM=\"$HOME/watcom-src/rel\"; export PATH=\"$WATCOM/armo64:$PATH\"; export INCLUDE=\"$WATCOM/h\"; cd \"/Users/jarrod/github/wordlelx/exm\"; \"$WATCOM/armo64/wmake\" -f Makefile.wmake exm"
+			],
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

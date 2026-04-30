@@ -70,6 +70,7 @@ static int scan_drive(char *found_dir, int maxlen)
     struct find_t fb;
     char          pat[16];
     char          dir[64];
+    int           n;
 
     if (try_load_from_dir("C:\\")) {
         if (found_dir) { found_dir[0] = 'C'; found_dir[1] = ':'; found_dir[2] = '\\'; found_dir[3] = '\0'; }
@@ -81,7 +82,9 @@ static int scan_drive(char *found_dir, int maxlen)
     do {
         if (!(fb.attrib & _A_SUBDIR)) continue;
         if (fb.name[0] == '.') continue;
-        sprintf(dir, "C:\\%s", fb.name);
+        n = sprintf(dir, "C:\\%s", fb.name);
+        if (n < 0 || n >= (int)sizeof(dir))
+            continue;
         if (try_load_from_dir(dir)) {
             if (found_dir) {
                 int n = (int)strlen(dir);
@@ -112,22 +115,16 @@ static int scan_drive(char *found_dir, int maxlen)
  * Must be patched for their data-segment on E_ACTIV (see FixupFarPtrs).
  *---------------------------------------------------------------------------*/
 char far *msgAppName = "WORDLE LX";
-char far *msgQuit    = "&Quit";
 char far *msgTitle   = "";   /* empty title — prevents NULL deref in SubclassMsg */
 char far *msgFkNew   = "New";
 char far *msgFkQuit  = "Quit";
-char far *msgMnFile  = "File";
-char far *msgMnNew   = "&New\tF1";
 
 /* StringTable lets FixupFarPtrs update DS in all far string vars at once. */
 char far **StringTable[] = {
     &msgAppName,
-    &msgQuit,
     &msgTitle,
     &msgFkNew,
-    &msgFkQuit,
-    &msgMnFile,
-    &msgMnNew
+    &msgFkQuit
 };
 
 #define STRING_COUNT (sizeof(StringTable) / sizeof(StringTable[0]))
@@ -186,7 +183,7 @@ static void do_submit(void);
 extern WINDOW WordleCard;
 
 /*---------------------------------------------------------------------------
- * Menu and function-key handlers
+ * Function-key handlers
  *---------------------------------------------------------------------------*/
 void far DoQuit(void)
 {
@@ -196,7 +193,6 @@ void far DoQuit(void)
 void far DoNew(void)
 {
     if (dat_load_state == 1) {
-        /* Previous load attempt failed — retry before starting a game. */
         dat_load_state = 0;
         SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
         return;
@@ -204,22 +200,6 @@ void far DoNew(void)
     start_new_game();
     SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
 }
-
-void far DoSubmit(void)
-{
-    do_submit();
-}
-
-MENU WordleFileMenu[] = {
-    { &msgMnNew,  DoNew,  0, 0, NO_HELP },
-    { &msgQuit,   DoQuit, 0, 0, NO_HELP },
-    { 0, 0, 0, 0, 0 }
-};
-
-MENU WordleTopMenu[] = {
-    { &msgMnFile, (PFUNC) WordleFileMenu, 0, MENU_PULLDOWN, NO_HELP },
-    { 0, 0, 0, 0, 0 }
-};
 
 /* F1=New  F10=Quit */
 FKEY WordleFKeys[] = {
@@ -234,9 +214,9 @@ WINDOW WordleCard = {
     WordleCardHandler,
     0, 0, 640, 190,
     &msgTitle, 0,
-    0, STYLE_NO_PARENT_KEY,
+    0, 0,
     NULL, WordleFKeys,
-    WordleTopMenu,
+    NO_MENU,
     NO_HELP
 };
 
@@ -249,12 +229,16 @@ WINDOW WordleCard = {
 static int try_load_from_dir(const char *dir)
 {
     char path[80];
-    const char *p;
-    char *d = path;
-    for (p = dir; *p; ) *d++ = *p++;
-    if (d > path && *(d-1) != '\\') *d++ = '\\';
-    for (p = "WORDLELX.DAT"; *p; ) *d++ = *p++;
-    *d = '\0';
+    int n;
+
+    if (!dir || !dir[0])
+        return worddata_load("WORDLELX.DAT");
+
+    n = sprintf(path, "%s%sWORDLELX.DAT", dir,
+                (dir[strlen(dir) - 1] == '\\') ? "" : "\\");
+    if (n < 0 || n >= (int)sizeof(path))
+        return 0;
+
     return worddata_load(path);
 }
 
@@ -382,9 +366,8 @@ static int handle_key(WORD data, WORD scan)
     if (c == 0)
         c = (char)((data >> 8) & 0xFF);
 
-    /* After game over: any key starts a new game */
+    /* After game over: swallow all keys; only F1 (caught in WordleCardHandler) starts new game */
     if (game_over_waiting) {
-        DoNew();
         return 1;
     }
 
@@ -499,9 +482,9 @@ static int ProcessEvent(EVENT *ev)
         break;
 
     case E_KEY:
-        SendMsg(&WordleCard, KEYSTROKE,
-                Fix101Key(ev->data, ev->scan),
-                (WORD)ev->scan);
+        /* Match HexCalc exactly: pass data as-is (Fix101Key identity),
+           let LHAPI/SubclassMsg use Extra (scan) for non-ASCII keys. */
+        SendMsg(GetFocus(), KEYSTROKE, (WORD)ev->data, (WORD)ev->scan);
         break;
 
     default:
@@ -529,6 +512,8 @@ static void Initialize(void)
     srand((unsigned int)time(NULL));
     m_init_app(SYSTEM_MANAGER_VERSION);
     InitializeCAP(&CapData);
+    SetMenuFont(FONT_NORMAL);
+    SetFont(FONT_NORMAL);
     RegisterFont(FONT_LARGE);
     m_reg_app_name(msgAppName);
     exm_init_fonts();

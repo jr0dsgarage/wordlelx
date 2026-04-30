@@ -104,7 +104,11 @@ static void draw_tile_letter(int tx, int ty, char letter, int inverse)
     char buf[2];
     buf[0] = letter;
     buf[1] = '\0';
-    G_Font(s_tile_font);
+    if (s_tile_font) {
+        G_Font(s_tile_font);
+    } else {
+        SET_LABEL_FONT();
+    }
     if (inverse) {
         /* White-on-black: XOR black ink over the solid-black tile background */
         G_RepRule(G_XOR);
