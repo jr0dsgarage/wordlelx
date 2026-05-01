@@ -20,7 +20,6 @@
 #include "exm_display.h"
 
 /* Plain DS strings — only read inside DRAW callbacks where DS is always valid */
-static char szTitle[]   = "Wordle LX";
 static char szLabel[]   = "Remaining Letters";
 static char szLegend1[] = "=Correct";
 static char szLegend2[] = "=Wrong Position";
@@ -265,21 +264,14 @@ void exm_draw_chrome(void)
     int lgnd_block_w = KB_BOX_W + 3 + 15 * s_label_font_w;
     int lgnd_x    = KBOARD_X + (RIGHT_PANEL_W - lgnd_block_w) / 2;
     int lgnd_tx   = lgnd_x + KB_BOX_W + 3;
-    int title_x   = BOARD_X + (BOARD_AREA_W - 9 * s_label_font_w) / 2;
     int label_x   = center_x_in_panel(17); /* "Remaining Letters" = 17 chars */
 
     SET_LABEL_FONT();
     G_ColorSel(MAXCOLOR);
     G_RepRule(G_FORCE);
 
-    /* "Wordle LX" above the game board, bold (draw at x and x+1) */
-    G_Text(title_x,     BOARD_TITLE_Y, szTitle, 0);
-    G_RepRule(G_OR);
-    G_Text(title_x + 1, BOARD_TITLE_Y, szTitle, 0);
-    G_RepRule(G_FORCE);
-
-    /* Vertical divider, full window height */
-    G_Move(DIVIDER_X, 0);
+    /* Vertical divider below the top title bar */
+    G_Move(DIVIDER_X, TITLE_BAR_H);
     G_Draw(DIVIDER_X, 189);
 
     /* "Remaining Letters" label at top of right panel */

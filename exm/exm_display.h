@@ -11,7 +11,8 @@
  * Layout constants (pixels, 640x190 usable area)
  *
  *  |<--  BOARD AREA (x=10..225)  -->|<----- RIGHT PANEL (x=242..630) ----->|
- *  |       "Wordle LX"              |  "Remaining Letters"                  |
+ *  |        (title bar above entire app window)                             |
+ *  |                                |  "Remaining Letters"                  |
  *  |   [tile][tile][tile][tile][tile]|  Q W E R T Y U I O P                |
  *  |   [tile][tile][tile][tile][tile]|   A S D F G H J K L                 |
  *  |   ...  (6 rows)                |    Z X C V B N M                     |
@@ -25,8 +26,7 @@
 
 /* Board area */
 #define BOARD_X       10   /* leftmost pixel of first tile column */
-#define BOARD_Y       20   /* topmost pixel of first tile row (shifted down for title) */
-#define BOARD_TITLE_Y  3   /* y of "Wordle LX" title above game board */
+#define BOARD_Y       20   /* topmost pixel of first tile row */
 #define BOARD_AREA_W  (5 * (TILE_W + TILE_HG) - TILE_HG)  /* 216 px */
 #define TILE_W        40   /* tile width in pixels */
 #define TILE_H        22   /* tile height in pixels */
@@ -34,15 +34,16 @@
 #define TILE_VG        3   /* vertical gap between rows */
 
 /* Right panel */
+#define TITLE_BAR_H   10   /* CAP title bar height used by DRAW_TITLE */
 #define DIVIDER_X    234   /* vertical divider x coordinate */
 #define KBOARD_X     242   /* right panel left edge */
-#define RIGHT_LABEL_Y  2   /* "Remaining Letters" label y (top of right panel) */
+#define RIGHT_LABEL_Y 17   /* "Remaining Letters" label y (below title bar) */
 
 /* Per-letter indicator boxes */
 #define KB_BOX_W      22   /* indicator width */
 #define KB_BOX_H      14   /* indicator height */
 #define KB_GAP         2   /* gap between indicators */
-#define KBOARD_Y      14   /* top of first keyboard row (below label) */
+#define KBOARD_Y      29   /* top of first keyboard row (below label) */
 
 /* Message area in right panel, below legend separator.
    Separator at RIGHT_MSG_Y-3; line 1 at RIGHT_MSG_Y+1; line 2 at RIGHT_MSG_Y+11. */

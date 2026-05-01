@@ -23,6 +23,8 @@
 #include "event.h"      /* EVENT, event_kind, edo_event                    */
 #include "cougraph.h"   /* G_Mode, G_CGAGRAPH, G_RESTORE                  */
 #include "keytab.h"     /* ENTERKEY, BACKSPACEKEY, ESCKEY                  */
+#include "lstring.h"    /* lstrlen                                         */
+#include "chtype.h"     /* CHAR_WIDTH                                      */
 
 #include <stdio.h>      /* fopen, fclose, fread, fwrite, sprintf */
 #include <stdlib.h>     /* rand, srand */
@@ -115,7 +117,7 @@ static int scan_drive(char *found_dir, int maxlen)
  * Must be patched for their data-segment on E_ACTIV (see FixupFarPtrs).
  *---------------------------------------------------------------------------*/
 char far *msgAppName = "WORDLE LX";
-char far *msgTitle   = "";   /* empty title — prevents NULL deref in SubclassMsg */
+char far *msgTitle   = "WordleLX";
 char far *msgFkNew   = "New";
 char far *msgFkQuit  = "Quit";
 
@@ -436,6 +438,31 @@ int far WordleCardHandler(PWINDOW Wnd, WORD Message, WORD Data, WORD Extra)
         }
         if (Data & DRAW_FRAME)
             ClearRect(Wnd->x, Wnd->y, Wnd->w, Wnd->h);
+        {
+            time_t now;
+            struct tm *tm_now;
+            char dt[24];
+            int dt_w;
+            int dt_x;
+
+            Rectangle(Wnd->x, Wnd->y, Wnd->w, TITLE_BAR_H, 1, G_SOLIDFILL);
+            (DrawText)(Wnd->x + (Wnd->w >> 1)
+                           - lstrlen(*(Wnd->Title)) * (CHAR_WIDTH(FONT_NORM) / 2),
+                       Wnd->y + 1,
+                       *(Wnd->Title),
+                       DRAW_INVERT,
+                       FONT_SMALL);
+
+            now = time(NULL);
+            tm_now = localtime(&now);
+            if (tm_now) {
+                strftime(dt, sizeof(dt), "%Y-%m-%d %H:%M", tm_now);
+                dt_w = (int)lstrlen(dt) * CHAR_WIDTH(FONT_SMALL);
+                dt_x = Wnd->x + Wnd->w - dt_w - 4;
+                if (dt_x < Wnd->x + 2) dt_x = Wnd->x + 2;
+                (DrawText)(dt_x, Wnd->y + 1, dt, DRAW_INVERT, FONT_SMALL);
+            }
+        }
         exm_draw_board(&gs);
         exm_draw_chrome();
         exm_draw_keyboard(&gs);

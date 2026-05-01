@@ -93,7 +93,7 @@ exm : $(TARGET) $(MAPFILE) $(WORDLELX_ICN) .SYMBOLIC
 	cp $(MAPFILE) WORDLELX.MAP
 	$(DOSBOX) -silent -conf dosbox-e2m-batch.conf
 	cp WORDLELX.EXM $(OUTDIR)/WORDLELX.EXM
-	rm -f wordlelx.exe WORDLELX.MAP
+	rm -f wordlelx.exe WORDLELX.EXE WORDLELX.MAP WORDLELX.EXM
 
 # Interactive: convert + launch TKERNEL for System Manager testing
 run : $(TARGET) $(MAPFILE) .SYMBOLIC
