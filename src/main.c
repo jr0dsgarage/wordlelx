@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     int       word_index;
     const char *answer;
 
-    if (!worddata_load_auto(argc > 0 ? argv[0] : 0)) {
+    if (!worddata_load_sibling(argc > 0 ? argv[0] : 0)) {
         fprintf(stderr, "Cannot find WORDLELX.DAT\n");
         return 1;
     }

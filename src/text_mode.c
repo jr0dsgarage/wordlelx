@@ -55,9 +55,9 @@ static void int86(int n, void *r, void *o) { (void)n;(void)r;(void)o; }
  *   1  : WORDLE LX (left)        LETTERS USED (right)
  *   2  : full-width under-title ──────────────────────────────── (LH_SEP1)
  *   3  : blank                   blank
- *   4  : Guess 1                 A-J alphabet
- *   6  : Guess 2                 K-T
- *   8  : Guess 3                 U-Z
+ *   4  : Guess 1                 QWERTYUIOP
+ *   6  : Guess 2                 ASDFGHJKL
+ *   8  : Guess 3                 ZXCVBNM
  *  10  : Guess 4                 ── right-half separator ────── (RH_SEP1)
  *  11  :                         LEGEND:
  *  12  : Guess 5                  X  Correct position (inverted)
@@ -76,7 +76,7 @@ static void int86(int n, void *r, void *o) { (void)n;(void)r;(void)o; }
 #define MSG_ROW    17          /* message / feedback row                */
 #define CREDIT_ROW 24
 
-/* Right half alphabet rows */
+/* Right half keyboard rows */
 #define RH_ALPHA1   4
 #define RH_ALPHA2   6
 #define RH_ALPHA3   8
@@ -232,16 +232,16 @@ static void tm_draw_board(const GameState *gs)
     }
 }
 
-/* ── Alphabet status (right half) ────────────────────────────── */
+/* ── Keyboard status (right half) ────────────────────────────── */
 
 /*
- * Three rows of the full alphabet, A-Z, each letter shown as a tile
+ * Three rows in QWERTY keyboard order, each letter shown as a tile
  * using the same visual scheme as the board.
  */
 static void tm_draw_keyboard(const GameState *gs)
 {
-    static const char *alpha_rows[3] = { "ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ" };
-    static const int   alpha_lens[3] = { 10, 10, 6 };
+    static const char *alpha_rows[3] = { "QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM" };
+    static const int   alpha_lens[3] = { 10, 9, 7 };
     static const int   screen_rows[3] = { RH_ALPHA1, RH_ALPHA2, RH_ALPHA3 };
 
     /* All vars declared at function scope — C89 requires no decl after stmt */
