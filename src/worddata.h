@@ -6,6 +6,9 @@ extern int         worddata_answer_count;
 extern char __far *worddata_guesses;
 extern int         worddata_guess_count;
 
+/* Reset all worddata globals to an unloaded state. */
+void worddata_reset(void);
+
 /* Load WORDLELX.DAT from an explicit path. Returns 1 on success, 0 on failure. */
 int worddata_load(const char *path);
 

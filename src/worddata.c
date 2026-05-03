@@ -24,6 +24,16 @@ int         worddata_guess_count  = 0;
 static char s_dat_path[128] = "";
 static long s_guess_ofs = 0L;
 
+void worddata_reset(void)
+{
+    if (worddata_answers) { _ffree(worddata_answers); worddata_answers = 0; }
+    if (worddata_guesses) { _ffree(worddata_guesses); worddata_guesses = 0; }
+    worddata_answer_count = 0;
+    worddata_guess_count = 0;
+    s_dat_path[0] = '\0';
+    s_guess_ofs = 0L;
+}
+
 /* --- Bit-stream reader --------------------------------------------------- */
 
 typedef struct {

@@ -11,7 +11,7 @@
  *   ProcessEvent()     → handles E_KEY (dispatch to card via SendMsg),
  *                         E_ACTIV/E_REFRESH (ReactivateCAP + redraw),
  *                         E_DEACT (DeactivateCAP), E_TERM (set Done)
- *   WordleCardHandler() → handles KEYSTROKE (game logic + redraw),
+ *   WordleCardHandler() → handles KEYSTROKE (F1/F10 + game input),
  *                          DRAW (full screen refresh via exm_display)
  *
  * All game state lives in the global `gs` (GameState). Game logic is
@@ -25,6 +25,7 @@
 #include "keytab.h"     /* ENTERKEY, BACKSPACEKEY, ESCKEY                  */
 #include "lstring.h"    /* lstrlen                                         */
 #include "chtype.h"     /* CHAR_WIDTH                                      */
+
 
 #include <stdio.h>      /* fopen, fclose, fread, fwrite, sprintf */
 #include <stdlib.h>     /* rand, srand */
@@ -89,8 +90,8 @@ static int scan_drive(char *found_dir, int maxlen)
             continue;
         if (try_load_from_dir(dir)) {
             if (found_dir) {
-                int n = (int)strlen(dir);
-                if (n < maxlen) { memcpy(found_dir, dir, n+1); }
+                int dlen = (int)strlen(dir);
+                if (dlen < maxlen) { memcpy(found_dir, dir, (size_t)dlen + 1); }
             }
             _dos_findclose(&fb);
             return 1;
@@ -249,7 +250,11 @@ static void worddata_try_load(void)
     char cwd[64];
     int  ok = 0;
 
-    if (dat_load_state == 2) return;
+    if (dat_load_state == 2) {
+        if (worddata_answers && worddata_answer_count > 0)
+            return;
+        dat_load_state = 0;
+    }
 
     cwd[0] = '\0';
     getcwd(cwd, sizeof(cwd));
@@ -283,51 +288,51 @@ static void worddata_try_load(void)
 
 static void start_new_game(void)
 {
-    int         idx = rand() % words_count();
-    const char *w   = words_get(idx);
-    game_init(&gs, w ? w : "XXXXX");
+    int         count = words_count();
+    int         idx;
+    const char *w;
+
+    if (count <= 0) {
+        strcpy(pending_msg, "No word list loaded");
+        return;
+    }
+
+    idx = rand() % count;
+    w   = words_get(idx);
+    if (!w) {
+        strcpy(pending_msg, "Word list error");
+        return;
+    }
+    game_init(&gs, w);
     game_over_waiting = 0;
     pending_msg[0] = '\0';
 }
 
 static void show_game_over(void)
 {
-    /* CP437: 0x01=☺ smiley, 0x02=☻ dark smiley (used as sad face) */
+    /* CP437: 0x01=smiley, 0x02=dark smiley (sad face) */
     if (gs.won) {
         exm_draw_message2("You've won! \x01", "F1 = New Game");
     } else {
         static char szAnswerLine[32];
-        const char *src;
-        char *d = szAnswerLine;
-        src = "The correct word was: ";
-        while (*src) *d++ = *src++;
-        src = gs.answer;
-        while (*src) *d++ = *src++;
-        *d = '\0';
+        sprintf(szAnswerLine, "The correct word was: %s", gs.answer);
         exm_draw_message3("You've lost! \x02", szAnswerLine, "F1 = New Game");
     }
 }
 
 static void do_submit(void)
 {
-    const char *s;
-    char *d;
     if (game_over_waiting) return;
+    if (gs.answer[0] == '\0') {
+        return;
+    }
     if (gs.input_len < WORD_LEN) {
-        s = "Need 5 letters";
-        d = pending_msg;
-        while (*s) *d++ = *s++;
-        *d = '\0';
+        strcpy(pending_msg, "Need 5 letters");
         SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
         return;
     }
     if (!words_contains(gs.input) && !guesses_is_valid(gs.input)) {
-        d = pending_msg;
-        *d++ = '"';
-        s = gs.input; while (*s) *d++ = *s++;
-        s = "\" is not a valid word!";
-        while (*s) *d++ = *s++;
-        *d = '\0';
+        sprintf(pending_msg, "\"%.5s\" is not a valid word!", gs.input);
         gs.input_len = 0;
         memset(gs.input, 0, sizeof(gs.input));
         SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
@@ -364,19 +369,24 @@ static int handle_key(WORD data, WORD scan)
 {
     char c = (char)(data & 0x00FF);
     char letter;
-    /* HP 200LX sends ASCII in the HIGH byte; low byte is always 0x00 */
-    if (c == 0)
-        c = (char)((data >> 8) & 0xFF);
 
-    /* After game over: swallow all keys; only F1 (caught in WordleCardHandler) starts new game */
+    /* Some 200LX key paths carry ASCII in the high byte (e.g. 0x6E00). */
+    if (c == 0 && (data >> 8) && scan == 0)
+        c = (char)(data >> 8);
+
+    if (data == F1KEY) { DoNew(); return 1; }
+    if (data == F10KEY) { DoQuit(); return 1; }
+
+    /* After game over: swallow gameplay keys. */
     if (game_over_waiting) {
-        return 1;
+        return 0;
     }
 
-    if (c == (char)ESCKEY)   { Done = TRUE;   return 1; }
-    if (c == (char)ENTERKEY) { do_submit();   return 1; }
+    /* Esc is ignored in gameplay. */
+    if (data == ESCKEY || c == (char)(ESCKEY & 0xFF)) { return 0; }
+    if (data == ENTERKEY || c == '\r' || c == '\n') { do_submit(); return 1; }
 
-    if (c == (char)BACKSPACEKEY || c == 127 || data == 0x0008) {
+    if (data == BACKSPACEKEY || c == (char)(BACKSPACEKEY & 0xFF) || c == 127) {
         if (gs.input_len > 0) {
             gs.input_len--;
             gs.input[gs.input_len] = '\0';
@@ -410,27 +420,14 @@ static int handle_key(WORD data, WORD scan)
  *---------------------------------------------------------------------------*/
 int far WordleCardHandler(PWINDOW Wnd, WORD Message, WORD Data, WORD Extra)
 {
-    WORD subclass_data = Data;
-
     switch (Message) {
 
     case KEYSTROKE:
-        /* Always allow exit keys even when data is missing — otherwise
-           the user is trapped with no way to close the app. */
-        if (Extra == 0x003B) { DoNew();     return 1; }  /* F1  */
-        if (Extra == 0x0044) { Done = TRUE; return 1; }  /* F10 */
-        {
-            char _c = (char)(Data & 0xFF);
-            if (_c == 0) _c = (char)((Data >> 8) & 0xFF);
-            if (_c == (char)ESCKEY) { Done = TRUE; return 1; }
-        }
-        if (worddata_answer_count == 0) return 1;   /* no data, swallow other keys */
         if (handle_key(Data, Extra))
             return 1;
-        break;
+        return 0;
 
     case DRAW:
-        subclass_data &= ~DRAW_TITLE;
         worddata_try_load();
         if (worddata_answer_count == 0) {
             exm_draw_message2("WORDLELX.DAT not found!", "Place next to EXM  F1=Retry");
@@ -438,7 +435,7 @@ int far WordleCardHandler(PWINDOW Wnd, WORD Message, WORD Data, WORD Extra)
         }
         if (Data & DRAW_FRAME)
             ClearRect(Wnd->x, Wnd->y, Wnd->w, Wnd->h);
-        {
+        if (Data & DRAW_TITLE) {
             time_t now;
             struct tm *tm_now;
             char dt[24];
@@ -479,21 +476,18 @@ int far WordleCardHandler(PWINDOW Wnd, WORD Message, WORD Data, WORD Extra)
         break;
     }
 
-    return SubclassMsg(Object, Wnd, Message, subclass_data, Extra);
+    return SubclassMsg(Object, Wnd, Message, Data, Extra);
 }
 
 /*---------------------------------------------------------------------------
  * Event dispatcher — the main event loop
  *---------------------------------------------------------------------------*/
-static int ProcessEvent(EVENT *ev)
+static void ProcessEvent(EVENT *ev)
 {
+    WORD keycode;
     switch (ev->kind) {
 
     case E_REFRESH:
-        FixupFarPtrs();
-        ReactivateCAP(&CapData);
-        break;
-
     case E_ACTIV:
         FixupFarPtrs();
         ReactivateCAP(&CapData);
@@ -509,15 +503,24 @@ static int ProcessEvent(EVENT *ev)
         break;
 
     case E_KEY:
-        /* Match HexCalc exactly: pass data as-is (Fix101Key identity),
-           let LHAPI/SubclassMsg use Extra (scan) for non-ASCII keys. */
-        SendMsg(GetFocus(), KEYSTROKE, (WORD)ev->data, (WORD)ev->scan);
+        keycode = Fix101Key(ev->data, ev->scan);
+
+        /* On HP 200LX, extended keys (Menu, F11, gray arrows, etc) arrive as
+           data=0x0000 or data=0x00E0 with scan code in ev->scan.
+           Convert scan code to extended keycode form (scan << 8). */
+        if (keycode == 0x00E0 || keycode == 0x0000)
+            keycode = ((WORD)ev->scan) << 8;
+
+        /* Some 200LX paths carry printable/control keys as 0xXX00. */
+        if ((keycode & 0x00FF) == 0 && (keycode & 0xFF00) != 0 && ev->scan == 0)
+            keycode = (WORD)((keycode >> 8) & 0x00FF);
+
+        SendMsg(&WordleCard, KEYSTROKE, keycode, (WORD)ev->scan);
         break;
 
     default:
         break;
     }
-    return 0;
 }
 
 void EventDispatcher(void)
@@ -526,7 +529,7 @@ void EventDispatcher(void)
     while (!Done) {
         app_event.do_event = DO_EVENT;
         m_action(&app_event);
-        ProcessEvent(&app_event);
+            ProcessEvent(&app_event);
     }
 }
 
@@ -535,11 +538,14 @@ void EventDispatcher(void)
  *---------------------------------------------------------------------------*/
 static void Initialize(void)
 {
+    dat_load_state = 0;
+    game_over_waiting = 0;
+    pending_msg[0] = '\0';
     memset(&gs, 0, sizeof(gs));
+    worddata_reset();
     srand((unsigned int)time(NULL));
     m_init_app(SYSTEM_MANAGER_VERSION);
     InitializeCAP(&CapData);
-    SetMenuFont(FONT_NORMAL);
     SetFont(FONT_NORMAL);
     RegisterFont(FONT_LARGE);
     m_reg_app_name(msgAppName);
