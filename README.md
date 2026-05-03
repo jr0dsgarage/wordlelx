@@ -45,7 +45,7 @@ This project was created using Claude Code and is set up to build with OpenWatco
 
 - Python 3
 - OpenWatcom v2
-- DOSBox-X available on your `PATH` as `dosbox-x`
+- DOSBox-X — the makefiles default to the macOS app path (`/Applications/DOSBox-X.app/Contents/MacOS/dosbox-x`); set the `DOSBOX` make variable to your executable path on other platforms
 - The EXM SDK repository checked out at `../EXM`, or `EXM_ROOT` set explicitly
  - EXM SDK: https://github.com/200lx/EXM
 
