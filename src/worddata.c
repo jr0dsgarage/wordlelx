@@ -89,6 +89,7 @@ int worddata_load_sibling(const char *exe_path)
             for (p = exe_path; p <= sep; ) *d++ = *p++;
         }
     }
+    if ((d - path) + (int)strlen(name) >= (int)sizeof(path)) return 0;
     for (p = name; *p; ) *d++ = *p++;
     *d = '\0';
     return worddata_load(path);

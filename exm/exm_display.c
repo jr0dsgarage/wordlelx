@@ -551,7 +551,7 @@ void exm_draw_message3(const char far *line1, const char far *line2, const char 
     const char far *p;
     int len, tx;
 
-    clear_rect_area(KBOARD_X, RIGHT_MSG_Y, RIGHT_PANEL_W, 30);
+    clear_rect_area(KBOARD_X, RIGHT_MSG_Y, RIGHT_PANEL_W, 32);
 
     SET_LABEL_FONT();
     G_ColorSel(MAXCOLOR);

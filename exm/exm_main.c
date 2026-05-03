@@ -201,6 +201,8 @@ void far DoQuit(void)
 
 void far DoNew(void)
 {
+    about_open = 0;
+    help_open  = 0;
     if (dat_load_state == 1) {
         dat_load_state = 0;
         SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
@@ -280,6 +282,7 @@ static void worddata_try_load(void)
     char cwd[64];
     int  ok = 0;
 
+    if (dat_load_state == 1) return;  /* DAT absent; DoNew() resets to retry */
     if (dat_load_state == 2) {
         if (worddata_answers && worddata_answer_count > 0)
             return;
@@ -421,7 +424,7 @@ static int handle_key(WORD data, WORD scan)
 
     /* After game over: swallow gameplay keys. */
     if (game_over_waiting) {
-        return 0;
+        return 1;
     }
 
     /* Esc is ignored in gameplay. */
