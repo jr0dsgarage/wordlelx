@@ -223,6 +223,49 @@ static void draw_kb_indicator(int x, int y, int state)
     G_RepRule(G_FORCE);
 }
 
+/* Draw a compact legend indicator for help-dialog rows. */
+static void draw_help_indicator(int x, int y, int state)
+{
+    const int bw = 14;
+    const int bh = 8;
+
+    switch (state) {
+    case LS_CORRECT:
+        G_ColorSel(MAXCOLOR);
+        G_RepRule(G_FORCE);
+        G_Move(x, y);
+        G_Rect(x + bw - 1, y + bh - 1, G_SOLIDFILL);
+        break;
+    case LS_MISPLACED:
+        G_FillMask(pat_dot25);
+        G_ColorSel(MAXCOLOR);
+        G_RepRule(G_FORCE);
+        G_Move(x, y);
+        G_Rect(x + bw - 1, y + bh - 1, G_PATTERNFILL);
+        G_Move(x, y);
+        G_Rect(x + bw - 1, y + bh - 1, G_OUTLINE);
+        break;
+    case LS_ABSENT:
+        G_FillMask(pat_hatch50);
+        G_ColorSel(MAXCOLOR);
+        G_RepRule(G_FORCE);
+        G_Move(x, y);
+        G_Rect(x + bw - 1, y + bh - 1, G_PATTERNFILL);
+        G_Move(x, y);
+        G_Rect(x + bw - 1, y + bh - 1, G_OUTLINE);
+        break;
+    default:
+        G_ColorSel(MAXCOLOR);
+        G_RepRule(G_FORCE);
+        G_Move(x, y);
+        G_Rect(x + bw - 1, y + bh - 1, G_OUTLINE);
+        break;
+    }
+
+    G_ColorSel(MAXCOLOR);
+    G_RepRule(G_FORCE);
+}
+
 /*---------------------------------------------------------------------------
  * Centering helpers (use s_label_font_w to get the right x regardless of
  * which font the system has)
@@ -237,6 +280,12 @@ static int center_x_for_msg(int num_chars)
     int tx = KBOARD_X + (RIGHT_PANEL_W - num_chars * s_label_font_w) / 2;
     if (tx < KBOARD_X) tx = KBOARD_X;
     return tx;
+}
+
+/* Center x for fixed-width label font text in an arbitrary rectangle. */
+static int center_x_in_rect(int left, int width, int num_chars)
+{
+    return left + (width - num_chars * s_label_font_w) / 2;
 }
 
 /*---------------------------------------------------------------------------
@@ -475,6 +524,79 @@ void exm_draw_message3(const char far *line1, const char far *line2, const char 
         while (*p++) len++;
         tx = center_x_for_msg(len);
         G_Text(tx, RIGHT_MSG_Y + 21, (char far *)line3, 0);
+    }
+}
+
+void exm_draw_help_dialog(void)
+{
+    static char h_title[] = "WORDLE LX HELP";
+    static char h_l1[]  = "Goal: guess the hidden five-letter word in six tries.";
+    static char h_l2[]  = "Type letters A-Z to fill the active row. Backspace deletes.";
+    static char h_l3[]  = "Press Enter to submit a guess when five letters are filled.";
+    static char h_l4[]  = "Each submitted tile shows feedback:";
+    static char h_l5[]  = "";
+    static char h_l6[]  = "= correct letter in the correct position.";
+    static char h_l7[]  = "= letter is in the word, wrong position.";
+    static char h_l8[]  = "= letter is not in the answer.";
+    static char h_l9[]  = "";
+    static char h_l10[] = "The right panel keyboard keeps best-known status per letter.";
+    static char h_l11[] = "Use this to avoid repeats and narrow candidates efficiently.";
+    static char h_l12[] = "A valid dictionary word is required for each submitted guess.";
+    static char h_l13[] = "";
+    static char h_l14[] = "Tip: prioritize coverage early, then lock positions quickly.";
+    static char *lines[] = {
+        h_l1, h_l2, h_l3, h_l4, h_l5, h_l6, h_l7, h_l8,
+        h_l9, h_l10, h_l11, h_l12, h_l13, h_l14
+    };
+    int x, y, w, h;
+    int i, len, tx;
+    int header_h;
+    int body_y;
+    int legend_x;
+    int legend_tx;
+    int legend_y;
+    char *p;
+
+    x = 20;
+    y = 14;
+    w = 600;
+    h = 168;
+    header_h = 12;
+    body_y = y + header_h + 4;
+    legend_x = x + 120;
+    legend_tx = legend_x + 20;
+
+    clear_rect_area(x, y, w, h);
+    draw_border(x, y, w, h, 2);
+
+    G_ColorSel(MAXCOLOR);
+    G_RepRule(G_FORCE);
+    G_Move(x + 1, y + header_h);
+    G_Draw(x + w - 2, y + header_h);
+
+    SET_LABEL_FONT();
+
+    p = h_title;
+    len = 0;
+    while (*p++) len++;
+    tx = center_x_in_rect(x, w, len);
+    G_Text(tx, y + 2, h_title, 0);
+
+    for (i = 0; i < (int)(sizeof(lines) / sizeof(lines[0])); i++) {
+        if (i >= 5 && i <= 7) {
+            legend_y = body_y + i * 9;
+            if (i == 5) draw_help_indicator(legend_x, legend_y, LS_CORRECT);
+            if (i == 6) draw_help_indicator(legend_x, legend_y, LS_MISPLACED);
+            if (i == 7) draw_help_indicator(legend_x, legend_y, LS_ABSENT);
+            G_Text(legend_tx, legend_y, lines[i], 0);
+            continue;
+        }
+        p = lines[i];
+        len = 0;
+        while (*p++) len++;
+        tx = center_x_in_rect(x + 8, w - 16, len);
+        if (tx < x + 8) tx = x + 8;
+        G_Text(tx, body_y + i * 9, lines[i], 0);
     }
 }
 
