@@ -87,6 +87,7 @@ int main(int argc, char *argv[])
 {
     Display   disp;
     GameState gs;
+    int       count;
     int       word_index;
     const char *answer;
 
@@ -99,11 +100,18 @@ int main(int argc, char *argv[])
     text_mode_init_display(&disp);
     disp.init();
 
+    count = words_count();
+    if (count <= 0) {
+        fprintf(stderr, "WORDLELX.DAT contains no answers\n");
+        disp.cleanup();
+        return 1;
+    }
+
     for (;;) {
         char msg[48];
         int  key;
 
-        word_index = rand() % words_count();
+        word_index = rand() % count;
         answer     = words_get(word_index);
         game_init(&gs, answer);
 
