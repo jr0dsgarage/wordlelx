@@ -21,7 +21,7 @@
  *  |                                |  ------------------------------------ |
  *  |                                |  Message line 1 (centered)            |
  *  |                                |  Message line 2 (centered)            |
-*  |=== F-key bar: F1=New  F9=Help  F10=Quit  (drawn by LHAPI) ============|
+*  |=== F-key bar: F1=New  F8=About  F9=Help  F10=Quit  (drawn by LHAPI) ===|
  *---------------------------------------------------------------------------*/
 
 /* Board area */
@@ -83,6 +83,9 @@ void exm_draw_message3(const char far *line1, const char far *line2, const char 
 
 /* Draw the large in-game help dialog overlay. */
 void exm_draw_help_dialog(void);
+
+/* Draw the in-game about dialog overlay. */
+void exm_draw_about_dialog(void);
 
 /* Redraw only the active input row tiles — fast path for letter entry. */
 void exm_draw_active_row(const GameState far *gs);

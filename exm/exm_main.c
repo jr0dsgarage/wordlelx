@@ -11,7 +11,7 @@
  *   ProcessEvent()     → handles E_KEY (dispatch to card via SendMsg),
  *                         E_ACTIV/E_REFRESH (ReactivateCAP + redraw),
  *                         E_DEACT (DeactivateCAP), E_TERM (set Done)
- *   WordleCardHandler() → handles KEYSTROKE (F1/F9/F10 + game input),
+ *   WordleCardHandler() → handles KEYSTROKE (F1/F8/F9/F10 + game input),
  *                          DRAW (full screen refresh via exm_display)
  *
  * All game state lives in the global `gs` (GameState). Game logic is
@@ -120,6 +120,7 @@ static int scan_drive(char *found_dir, int maxlen)
 char far *msgAppName = "WORDLE LX";
 char far *msgTitle   = "WordleLX";
 char far *msgFkNew   = "New";
+char far *msgFkAbout = "About";
 char far *msgFkHelp  = "Help";
 char far *msgFkQuit  = "Quit";
 
@@ -128,6 +129,7 @@ char far **StringTable[] = {
     &msgAppName,
     &msgTitle,
     &msgFkNew,
+    &msgFkAbout,
     &msgFkHelp,
     &msgFkQuit
 };
@@ -142,6 +144,7 @@ CAPBLOCK CapData;     /* LHAPI capability block           */
 GameState gs;         /* live game state                  */
 BOOL     Done;        /* event loop termination flag       */
 int      game_over_waiting; /* 1 = game ended, waiting for keypress */
+int      about_open;        /* 1 = about dialog visible */
 int      help_open;         /* 1 = help dialog visible */
 char     pending_msg[48];   /* message shown in next DRAW; empty = none */
 
@@ -209,13 +212,30 @@ void far DoNew(void)
 
 void far DoHelp(void)
 {
-    help_open = !help_open;
+    if (help_open) {
+        help_open = 0;
+    } else {
+        help_open = 1;
+        about_open = 0;
+    }
     SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
 }
 
-/* F1=New  F9=Help  F10=Quit */
+void far DoAbout(void)
+{
+    if (about_open) {
+        about_open = 0;
+    } else {
+        about_open = 1;
+        help_open = 0;
+    }
+    SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
+}
+
+/* F1=New  F8=About  F9=Help  F10=Quit */
 FKEY WordleFKeys[] = {
     { &msgFkNew,  DoNew,  1,               0 },
+    { &msgFkAbout, DoAbout, 8,             0 },
     { &msgFkHelp, DoHelp, 9,               0 },
     { &msgFkQuit, DoQuit, 10 + FKEY_LAST,  0 }
 };
@@ -385,11 +405,13 @@ static int handle_key(WORD data, WORD scan)
         c = (char)(data >> 8);
 
     if (data == F1KEY) { DoNew(); return 1; }
+    if (data == F8KEY) { DoAbout(); return 1; }
     if (data == F9KEY) { DoHelp(); return 1; }
     if (data == F10KEY) { DoQuit(); return 1; }
 
-    if (help_open) {
+    if (about_open || help_open) {
         if (data == ESCKEY || c == (char)(ESCKEY & 0xFF)) {
+            about_open = 0;
             help_open = 0;
             SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
             return 1;
@@ -490,6 +512,8 @@ int far WordleCardHandler(PWINDOW Wnd, WORD Message, WORD Data, WORD Extra)
         } else {
             exm_draw_message2(szCredit1, szCredit2);
         }
+        if (about_open)
+            exm_draw_about_dialog();
         if (help_open)
             exm_draw_help_dialog();
         break;
@@ -562,6 +586,7 @@ static void Initialize(void)
 {
     dat_load_state = 0;
     game_over_waiting = 0;
+    about_open = 0;
     help_open = 0;
     pending_msg[0] = '\0';
     memset(&gs, 0, sizeof(gs));
@@ -577,10 +602,17 @@ static void Initialize(void)
     SendMsg(&WordleCard, CREATE, CREATE_FOCUS, 0);
 }
 
+static void Uninitialize(void)
+{
+    /* Release DAT buffers before task finalization to reduce retained memory. */
+    worddata_reset();
+    m_fini();
+}
+
 void main(void)
 {
     FixupFarPtrs();
     Initialize();
     EventDispatcher();
-    m_fini();
+    Uninitialize();
 }
