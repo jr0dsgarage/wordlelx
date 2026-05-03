@@ -312,7 +312,7 @@ static void draw_chrome(void)
 
     /* ── Right half ────────────────────────────────────── */
 
-    vram_str(RH_START + (RH_WIDTH - 12) / 2, 1, "LETTERS USED", 0x07);
+    vram_str(RH_START + (RH_WIDTH - 12) / 2, 1, "Remaining Letters", 0x07);
 
     vram_fill(RH_START, RH_SEP1, 40, 0xC4, 0x07);
 
