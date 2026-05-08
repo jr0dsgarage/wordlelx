@@ -18,6 +18,9 @@
 #include "cap2.h"
 #include "cougraph.h"
 #include "exm_display.h"
+#include "i812_font_data.h"
+
+extern int use_i812_font;   /* 0 = original large board font (default), 1 = i812 font */
 
 /* Plain DS strings — only read inside DRAW callbacks where DS is always valid */
 static char szLabel[]   = "Remaining Letters";
@@ -30,9 +33,9 @@ static char szLegend3[] = "=Not in word";
 /*---------------------------------------------------------------------------
  * Font management
  *
- * exm_init_fonts() detects the label/UI font once (for keyboard, chrome,
- * messages).  Tile letters use LHAPI DrawText with FONT_LARGE (16x12 px)
- * which is independent of the COUGRAPH font state.
+ * i812.com glyphs are rendered with a custom bitmap path for both label text
+ * and tile letters. A ROM font pointer is still cached as fallback for any
+ * missing characters in the extracted table.
  *
  * s_label_font_w drives all text-centering calculations.
  *---------------------------------------------------------------------------*/
@@ -41,13 +44,17 @@ static void far *s_label_font   = NULL;
 static int       s_label_font_w = 8;
 static void far *s_tile_font    = NULL;  /* 16x12 COUGRAPH font for tile letters */
 
+#define TILE_GLYPH_W (I812_FONT_WIDTH * 3)
+#define TILE_GLYPH_H (I812_FONT_HEIGHT * 2)
+
 void exm_init_fonts(void)
 {
     void far *fp;
     if (s_inited) return;
     s_inited = 1;
 
-    s_tile_font = G_GetFont(FONT_LARGE);  /* 16x12 — direct bitmap ptr, no stack */
+    /* Original board font path: COUGRAPH 16x12 tile font */
+    s_tile_font = G_GetFont(FONT_LARGE);
 
     /* Prefer 8x8 (CGA ROM font), fall back to 6x8 */
     fp = G_GetFont(0x0808);
@@ -125,28 +132,112 @@ static void clear_rect_area(int x, int y, int w, int h)
     G_Rect(x+w-1, y+h-1, G_SOLIDFILL);
 }
 
+/* Draw one i812 8x8 glyph; sx/sy scale pixels for tile rendering.
+    If use_i812_font is 0, this path is disabled. */
+static void draw_i812_glyph(int x, int y, unsigned char ch, int sx, int sy, int inverse)
+{
+    int row;
+    int col;
+    int run_start;
+    int yrep;
+    unsigned short bits;
+
+    /* If using ROM font, skip i812 bitmap rendering */
+    if (!use_i812_font || !i812_font_present[ch]) {
+        return;
+    }
+
+    G_ColorSel(MAXCOLOR);
+    G_RepRule(inverse ? G_XOR : G_FORCE);
+
+    for (row = 0; row < I812_FONT_HEIGHT; row++) {
+        bits = i812_font_glyphs[ch][row] & 0x00FF;
+        run_start = -1;
+
+        for (col = 0; col <= I812_FONT_WIDTH; col++) {
+            int on = (col < I812_FONT_WIDTH) && (bits & (0x80u >> col));
+            if (on && run_start < 0) {
+                run_start = col;
+            }
+            if ((!on || col == I812_FONT_WIDTH) && run_start >= 0) {
+                int x1 = x + run_start * sx;
+                int x2 = x + col * sx - 1;
+                for (yrep = 0; yrep < sy; yrep++) {
+                    int yy = y + row * sy + yrep;
+                    G_Move(x1, yy);
+                    G_Draw(x2, yy);
+                }
+                run_start = -1;
+            }
+        }
+    }
+
+    G_RepRule(G_FORCE);
+}
+
+static void draw_i812_text(int x, int y, const char far *msg, int sx, int sy, int inverse)
+{
+    char buf[2];
+    const unsigned char far *p = (const unsigned char far *)msg;
+
+    if (!msg) return;
+
+    /* If use_i812_font is 0, use the standard UI text font */
+    if (!use_i812_font) {
+        if (s_label_font) {
+            SET_LABEL_FONT();
+            G_ColorSel(MAXCOLOR);
+            G_RepRule(inverse ? G_XOR : G_FORCE);
+            G_Text(x, y, (char far *)msg, 0);
+            G_RepRule(G_FORCE);
+        }
+        return;
+    }
+
+    buf[1] = '\0';
+    while (*p) {
+        unsigned char ch = *p++;
+        if (i812_font_present[ch]) {
+            draw_i812_glyph(x, y, ch, sx, sy, inverse);
+        } else if (ch != ' ' && s_label_font) {
+            buf[0] = (char)ch;
+            G_Font(s_label_font);
+            G_ColorSel(MAXCOLOR);
+            G_RepRule(inverse ? G_XOR : G_FORCE);
+            G_Text(x, y, buf, 0);
+            G_RepRule(G_FORCE);
+        }
+        x += s_label_font_w * sx;
+    }
+}
+
 /* Draw a letter into the tile using the cached 16x12 COUGRAPH font pointer.
    G_Font takes a raw bitmap ptr — no LHAPI font stack involved, no fallback. */
 static void draw_tile_letter(int tx, int ty, char letter, int inverse)
 {
-    char buf[2];
-    buf[0] = letter;
-    buf[1] = '\0';
-    if (s_tile_font) {
-        G_Font(s_tile_font);
+    if (use_i812_font) {
+        draw_i812_glyph(tx, ty, (unsigned char)letter, 3, 2, inverse);
     } else {
-        SET_LABEL_FONT();
-    }
-    if (inverse) {
-        /* White-on-black: XOR black ink over the solid-black tile background */
-        G_RepRule(G_XOR);
-        G_ColorSel(MAXCOLOR);
-        G_Text(tx, ty, buf, 0);
-        G_RepRule(G_FORCE);
-    } else {
-        G_ColorSel(MAXCOLOR);
-        G_RepRule(G_FORCE);
-        G_Text(tx, ty, buf, 0);
+        /* Original path: use COUGRAPH large font for tile letters */
+        char buf[2];
+
+        buf[0] = letter;
+        buf[1] = '\0';
+        if (s_tile_font) {
+            G_Font(s_tile_font);
+        } else {
+            SET_LABEL_FONT();
+        }
+        if (inverse) {
+            G_RepRule(G_XOR);
+            G_ColorSel(MAXCOLOR);
+            G_Text(tx, ty, buf, 0);
+            G_RepRule(G_FORCE);
+        } else {
+            G_ColorSel(MAXCOLOR);
+            G_RepRule(G_FORCE);
+            G_Text(tx, ty, buf, 0);
+        }
     }
 }
 
@@ -154,8 +245,10 @@ static void draw_tile_letter(int tx, int ty, char letter, int inverse)
    active: non-zero means this tile is in the current active input row. */
 static void draw_tile(int x, int y, char letter, int state, int active)
 {
-    int tx = x + (TILE_W - FONT_LARGE_W) / 2;
-    int ty = y + (TILE_H - FONT_LARGE_H) / 2;
+    int glyph_w = use_i812_font ? TILE_GLYPH_W : FONT_LARGE_W;
+    int glyph_h = use_i812_font ? TILE_GLYPH_H : FONT_LARGE_H;
+    int tx = x + (TILE_W - glyph_w) / 2;
+    int ty = y + (TILE_H - glyph_h) / 2;
 
     switch (state) {
 
@@ -374,7 +467,7 @@ void exm_draw_chrome(void)
     G_Draw(DIVIDER_X, 189);
 
     /* "Remaining Letters" label at top of right panel */
-    G_Text(label_x, RIGHT_LABEL_Y, szLabel, 0);
+    draw_i812_text(label_x, RIGHT_LABEL_Y, szLabel, 1, 1, 0);
 
     /* Separator below label+keyboard block, above legend */
     G_Move(KBOARD_X, kb_bottom + 3);
@@ -383,15 +476,15 @@ void exm_draw_chrome(void)
     /* Legend: indicator box + label, centered as a group */
     draw_kb_indicator(lgnd_x, lgnd_y1, LS_CORRECT);
     SET_LABEL_FONT();
-    G_Text(lgnd_tx, lgnd_y1 + 3, szLegend1, 0);
+    draw_i812_text(lgnd_tx, lgnd_y1 + 3, szLegend1, 1, 1, 0);
 
     draw_kb_indicator(lgnd_x, lgnd_y2, LS_MISPLACED);
     SET_LABEL_FONT();
-    G_Text(lgnd_tx, lgnd_y2 + 3, szLegend2, 0);
+    draw_i812_text(lgnd_tx, lgnd_y2 + 3, szLegend2, 1, 1, 0);
 
     draw_kb_indicator(lgnd_x, lgnd_y3, LS_ABSENT);
     SET_LABEL_FONT();
-    G_Text(lgnd_tx, lgnd_y3 + 3, szLegend3, 0);
+    draw_i812_text(lgnd_tx, lgnd_y3 + 3, szLegend3, 1, 1, 0);
 
     /* Separator above message area */
     G_Move(KBOARD_X, RIGHT_MSG_Y - 3);
@@ -459,11 +552,9 @@ void exm_draw_keyboard(const GameState far *gs)
         ty = y1 + (KB_BOX_H - 8) / 2;
         SET_LABEL_FONT();
         if (state == LS_CORRECT) {
-            G_RepRule(G_XOR);
-            G_Text(tx, ty, lbuf, 0);
-            G_RepRule(G_FORCE);
+            draw_i812_text(tx, ty, lbuf, 1, 1, 1);
         } else {
-            G_Text(tx, ty, lbuf, 0);
+            draw_i812_text(tx, ty, lbuf, 1, 1, 0);
         }
     }
 
@@ -477,11 +568,9 @@ void exm_draw_keyboard(const GameState far *gs)
         ty = y2 + (KB_BOX_H - 8) / 2;
         SET_LABEL_FONT();
         if (state == LS_CORRECT) {
-            G_RepRule(G_XOR);
-            G_Text(tx, ty, lbuf, 0);
-            G_RepRule(G_FORCE);
+            draw_i812_text(tx, ty, lbuf, 1, 1, 1);
         } else {
-            G_Text(tx, ty, lbuf, 0);
+            draw_i812_text(tx, ty, lbuf, 1, 1, 0);
         }
     }
 
@@ -495,11 +584,9 @@ void exm_draw_keyboard(const GameState far *gs)
         ty = y3 + (KB_BOX_H - 8) / 2;
         SET_LABEL_FONT();
         if (state == LS_CORRECT) {
-            G_RepRule(G_XOR);
-            G_Text(tx, ty, lbuf, 0);
-            G_RepRule(G_FORCE);
+            draw_i812_text(tx, ty, lbuf, 1, 1, 1);
         } else {
-            G_Text(tx, ty, lbuf, 0);
+            draw_i812_text(tx, ty, lbuf, 1, 1, 0);
         }
     }
 }
@@ -517,7 +604,7 @@ void exm_draw_message(const char far *msg)
         SET_LABEL_FONT();
         G_ColorSel(MAXCOLOR);
         G_RepRule(G_FORCE);
-        G_Text(tx, RIGHT_MSG_Y + 1, (char far *)msg, 0);
+        draw_i812_text(tx, RIGHT_MSG_Y + 1, msg, 1, 1, 0);
     }
 }
 
@@ -536,13 +623,13 @@ void exm_draw_message2(const char far *line1, const char far *line2)
         p = line1; len = 0;
         while (*p++) len++;
         tx = center_x_for_msg(len);
-        G_Text(tx, RIGHT_MSG_Y + 1, (char far *)line1, 0);
+        draw_i812_text(tx, RIGHT_MSG_Y + 1, line1, 1, 1, 0);
     }
     if (line2) {
         p = line2; len = 0;
         while (*p++) len++;
         tx = center_x_for_msg(len);
-        G_Text(tx, RIGHT_MSG_Y + 11, (char far *)line2, 0);
+        draw_i812_text(tx, RIGHT_MSG_Y + 11, line2, 1, 1, 0);
     }
 }
 
@@ -561,19 +648,19 @@ void exm_draw_message3(const char far *line1, const char far *line2, const char 
         p = line1; len = 0;
         while (*p++) len++;
         tx = center_x_for_msg(len);
-        G_Text(tx, RIGHT_MSG_Y + 1, (char far *)line1, 0);
+        draw_i812_text(tx, RIGHT_MSG_Y + 1, line1, 1, 1, 0);
     }
     if (line2) {
         p = line2; len = 0;
         while (*p++) len++;
         tx = center_x_for_msg(len);
-        G_Text(tx, RIGHT_MSG_Y + 11, (char far *)line2, 0);
+        draw_i812_text(tx, RIGHT_MSG_Y + 11, line2, 1, 1, 0);
     }
     if (line3) {
         p = line3; len = 0;
         while (*p++) len++;
         tx = center_x_for_msg(len);
-        G_Text(tx, RIGHT_MSG_Y + 21, (char far *)line3, 0);
+        draw_i812_text(tx, RIGHT_MSG_Y + 21, line3, 1, 1, 0);
     }
 }
 
@@ -630,7 +717,7 @@ void exm_draw_help_dialog(void)
     len = 0;
     while (*p++) len++;
     tx = center_x_in_rect(x, w, len);
-    G_Text(tx, y + 2, h_title, 0);
+    draw_i812_text(tx, y + 2, h_title, 1, 1, 0);
 
     for (i = 0; i < (int)(sizeof(lines) / sizeof(lines[0])); i++) {
         if (i >= 5 && i <= 7) {
@@ -638,7 +725,7 @@ void exm_draw_help_dialog(void)
             if (i == 5) draw_help_indicator(legend_x, legend_y, LS_CORRECT);
             if (i == 6) draw_help_indicator(legend_x, legend_y, LS_MISPLACED);
             if (i == 7) draw_help_indicator(legend_x, legend_y, LS_ABSENT);
-            G_Text(legend_tx, legend_y, lines[i], 0);
+            draw_i812_text(legend_tx, legend_y, lines[i], 1, 1, 0);
             continue;
         }
         p = lines[i];
@@ -646,7 +733,7 @@ void exm_draw_help_dialog(void)
         while (*p++) len++;
         tx = center_x_in_rect(x + 8, w - 16, len);
         if (tx < x + 8) tx = x + 8;
-        G_Text(tx, body_y + i * 9, lines[i], 0);
+        draw_i812_text(tx, body_y + i * 9, lines[i], 1, 1, 0);
     }
 }
 
@@ -697,10 +784,10 @@ void exm_draw_about_dialog(void)
     draw_border(icon_box_x, icon_box_y, icon_box_w, icon_box_h, 1);
     draw_about_icon(icon_x, icon_y, icon_scale);
 
-    G_Text(text_x, text_y + 0, a_l1, 0);
-    G_Text(text_x, text_y + 10, a_l2, 0);
-    G_Text(text_x, text_y + 20, a_l3, 0);
-    G_Text(text_x, text_y + 30, a_l4, 0);
+    draw_i812_text(text_x, text_y + 0, a_l1, 1, 1, 0);
+    draw_i812_text(text_x, text_y + 10, a_l2, 1, 1, 0);
+    draw_i812_text(text_x, text_y + 20, a_l3, 1, 1, 0);
+    draw_i812_text(text_x, text_y + 30, a_l4, 1, 1, 0);
 }
 
 void exm_draw_active_row(const GameState far *gs)

@@ -104,6 +104,20 @@ python3 make_icon.py output/WORDLELX.ICN
 
 The icon generator writes both `WORDLELX.ICN` and `WORDLDOS.ICN` into `output/`.
 
+### Optional: regenerate the i812 EXM bitmap font asset
+
+The EXM renderer can use glyphs extracted from `i812.com` (HP 200LX font loader).
+The repository checks in generated C assets in `exm/i812_font_data.c` and
+`exm/i812_font_data.h`.
+
+To regenerate those files from a new or updated `i812.com`:
+
+```sh
+python3 extract_i812_font.py i812.com exm/i812_font_data.h exm/i812_font_data.c
+```
+
+This is a one-time/manual step and is not part of `wmake` by default.
+
 ### 2. Build the DOS executable
 
 ```sh
@@ -171,3 +185,28 @@ To launch the EXM build flow for interactive HP 200LX testing:
 cd exm
 wmake -f Makefile.wmake run
 ```
+
+### EXM Controls
+
+When running the EXM version on the HP 200LX System Manager:
+
+- **F1** — New Game
+- **F5** — Toggle Font (switch between original large board font and i812 custom bitmap font)
+- **F8** — About
+- **F9** — Help
+- **F10** — Quit
+
+The **Font toggle (F5)** lets you switch between two rendering modes:
+- **Original font** (default): Uses the previous COUGRAPH large tile font (`FONT_LARGE`, 16x12) for board letters and the standard UI label font for panel text
+- **i812 font**: Uses glyphs extracted from `i812.com`, giving the UI and board a custom styled appearance with the i812 bitmap font
+
+The choice persists for the current game session only; it resets to the original font when the app restarts.
+
+## DOS Font Note
+
+The DOS executable (`WORDLDOS.EXE`) uses 80x25 text mode and therefore depends
+on the currently active system font in video text mode. It does not blit custom
+bitmap glyphs per character in text mode.
+
+If you want DOS text to appear in the i812 style, load that font in the DOS
+session first (for example by running `i812.com` before launching the game).
