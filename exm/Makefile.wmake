@@ -38,7 +38,7 @@ WATCOM_LIB = $(%WATCOM)/lib286/dos
 EXMLIBS  = $(LIB)/captko.lib $(LIB)/mlhstub.lib $(LIB)/tsr.lib
 WLIBS    = $(WATCOM_LIB)/clibs.lib
 
-OBJS     = $(BUILDDIR)/exm_main.obj $(BUILDDIR)/exm_display.obj $(BUILDDIR)/game.obj $(BUILDDIR)/worddata.obj $(BUILDDIR)/words.obj $(BUILDDIR)/guesses.obj
+OBJS     = $(BUILDDIR)/exm_main.obj $(BUILDDIR)/exm_display.obj $(BUILDDIR)/i812_font_data.obj $(BUILDDIR)/game.obj $(BUILDDIR)/worddata.obj $(BUILDDIR)/words.obj $(BUILDDIR)/guesses.obj
 TARGET   = $(BUILDDIR)/wordlelx.exe
 WLKMAP   = $(BUILDDIR)/wordlelx.wlkmap
 MAPFILE  = $(BUILDDIR)/WORDLELX.MAP
@@ -53,7 +53,7 @@ $(TARGET) : $(OBJS)
 	wlink name $@ format dos option nodefaultlibs option quiet &
 	    option map=$(WLKMAP) &
 	    option stack=8192 &
-	    file $(BUILDDIR)/exm_main.obj,$(BUILDDIR)/exm_display.obj,$(BUILDDIR)/game.obj,$(BUILDDIR)/worddata.obj,$(BUILDDIR)/words.obj,$(BUILDDIR)/guesses.obj &
+	    file $(BUILDDIR)/exm_main.obj,$(BUILDDIR)/exm_display.obj,$(BUILDDIR)/i812_font_data.obj,$(BUILDDIR)/game.obj,$(BUILDDIR)/worddata.obj,$(BUILDDIR)/words.obj,$(BUILDDIR)/guesses.obj &
 	    library $(LIB)/captko.lib,$(LIB)/mlhstub.lib,$(LIB)/tsr.lib &
 	    library $(WATCOM_LIB)/clibs.lib
 
@@ -63,8 +63,11 @@ $(MAPFILE) : $(TARGET) $(WLKMAP)
 $(BUILDDIR)/exm_main.obj : exm_main.c exm_display.h
 	wcc $(CFLAGS) -fo=$@ exm_main.c
 
-$(BUILDDIR)/exm_display.obj : exm_display.c exm_display.h
+$(BUILDDIR)/exm_display.obj : exm_display.c exm_display.h i812_font_data.h
 	wcc $(CFLAGS) -fo=$@ exm_display.c
+
+$(BUILDDIR)/i812_font_data.obj : i812_font_data.c i812_font_data.h
+	wcc $(CFLAGS) -fo=$@ i812_font_data.c
 
 $(BUILDDIR)/game.obj : $(SRC)/game.c $(SRC)/game.h
 	wcc $(CFLAGS) -fo=$@ $(SRC)/game.c

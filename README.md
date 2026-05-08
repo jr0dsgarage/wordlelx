@@ -104,6 +104,20 @@ python3 make_icon.py output/WORDLELX.ICN
 
 The icon generator writes both `WORDLELX.ICN` and `WORDLDOS.ICN` into `output/`.
 
+### Optional: regenerate the i812 EXM bitmap font asset
+
+The EXM renderer can use glyphs extracted from `i812.com` (HP 200LX font loader).
+The repository checks in generated C assets in `exm/i812_font_data.c` and
+`exm/i812_font_data.h`.
+
+To regenerate those files from a new or updated `i812.com`:
+
+```sh
+python3 extract_i812_font.py i812.com exm/i812_font_data.h exm/i812_font_data.c
+```
+
+This is a one-time/manual step and is not part of `wmake` by default.
+
 ### 2. Build the DOS executable
 
 ```sh
@@ -171,3 +185,12 @@ To launch the EXM build flow for interactive HP 200LX testing:
 cd exm
 wmake -f Makefile.wmake run
 ```
+
+## DOS Font Note
+
+The DOS executable (`WORDLDOS.EXE`) uses 80x25 text mode and therefore depends
+on the currently active system font in video text mode. It does not blit custom
+bitmap glyphs per character in text mode.
+
+If you want DOS text to appear in the i812 style, load that font in the DOS
+session first (for example by running `i812.com` before launching the game).
