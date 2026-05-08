@@ -20,6 +20,8 @@
 #include "exm_display.h"
 #include "i812_font_data.h"
 
+extern int use_i812_font;   /* 0 = original large board font (default), 1 = i812 font */
+
 /* Plain DS strings — only read inside DRAW callbacks where DS is always valid */
 static char szLabel[]   = "Remaining Letters";
 static char szLegend1[] = "=Correct";
@@ -40,15 +42,19 @@ static char szLegend3[] = "=Not in word";
 static int       s_inited       = 0;
 static void far *s_label_font   = NULL;
 static int       s_label_font_w = 8;
+static void far *s_tile_font    = NULL;  /* 16x12 COUGRAPH font for tile letters */
 
-#define TILE_GLYPH_W (I812_FONT_WIDTH * 2)
-#define TILE_GLYPH_H (I812_FONT_HEIGHT)
+#define TILE_GLYPH_W (I812_FONT_WIDTH * 3)
+#define TILE_GLYPH_H (I812_FONT_HEIGHT * 2)
 
 void exm_init_fonts(void)
 {
     void far *fp;
     if (s_inited) return;
     s_inited = 1;
+
+    /* Original board font path: COUGRAPH 16x12 tile font */
+    s_tile_font = G_GetFont(FONT_LARGE);
 
     /* Prefer 8x8 (CGA ROM font), fall back to 6x8 */
     fp = G_GetFont(0x0808);
@@ -126,7 +132,8 @@ static void clear_rect_area(int x, int y, int w, int h)
     G_Rect(x+w-1, y+h-1, G_SOLIDFILL);
 }
 
-/* Draw one i812 8x8 glyph; sx/sy scale pixels for tile rendering. */
+/* Draw one i812 8x8 glyph; sx/sy scale pixels for tile rendering.
+    If use_i812_font is 0, this path is disabled. */
 static void draw_i812_glyph(int x, int y, unsigned char ch, int sx, int sy, int inverse)
 {
     int row;
@@ -135,7 +142,8 @@ static void draw_i812_glyph(int x, int y, unsigned char ch, int sx, int sy, int 
     int yrep;
     unsigned short bits;
 
-    if (!i812_font_present[ch]) {
+    /* If using ROM font, skip i812 bitmap rendering */
+    if (!use_i812_font || !i812_font_present[ch]) {
         return;
     }
 
@@ -174,6 +182,18 @@ static void draw_i812_text(int x, int y, const char far *msg, int sx, int sy, in
 
     if (!msg) return;
 
+    /* If use_i812_font is 0, use the standard UI text font */
+    if (!use_i812_font) {
+        if (s_label_font) {
+            SET_LABEL_FONT();
+            G_ColorSel(MAXCOLOR);
+            G_RepRule(inverse ? G_XOR : G_FORCE);
+            G_Text(x, y, (char far *)msg, 0);
+            G_RepRule(G_FORCE);
+        }
+        return;
+    }
+
     buf[1] = '\0';
     while (*p) {
         unsigned char ch = *p++;
@@ -195,15 +215,40 @@ static void draw_i812_text(int x, int y, const char far *msg, int sx, int sy, in
    G_Font takes a raw bitmap ptr — no LHAPI font stack involved, no fallback. */
 static void draw_tile_letter(int tx, int ty, char letter, int inverse)
 {
-    draw_i812_glyph(tx, ty, (unsigned char)letter, 2, 1, inverse);
+    if (use_i812_font) {
+        draw_i812_glyph(tx, ty, (unsigned char)letter, 3, 2, inverse);
+    } else {
+        /* Original path: use COUGRAPH large font for tile letters */
+        char buf[2];
+
+        buf[0] = letter;
+        buf[1] = '\0';
+        if (s_tile_font) {
+            G_Font(s_tile_font);
+        } else {
+            SET_LABEL_FONT();
+        }
+        if (inverse) {
+            G_RepRule(G_XOR);
+            G_ColorSel(MAXCOLOR);
+            G_Text(tx, ty, buf, 0);
+            G_RepRule(G_FORCE);
+        } else {
+            G_ColorSel(MAXCOLOR);
+            G_RepRule(G_FORCE);
+            G_Text(tx, ty, buf, 0);
+        }
+    }
 }
 
 /* Draw a single tile at (x,y) with given letter and state.
    active: non-zero means this tile is in the current active input row. */
 static void draw_tile(int x, int y, char letter, int state, int active)
 {
-    int tx = x + (TILE_W - TILE_GLYPH_W) / 2;
-    int ty = y + (TILE_H - TILE_GLYPH_H) / 2;
+    int glyph_w = use_i812_font ? TILE_GLYPH_W : FONT_LARGE_W;
+    int glyph_h = use_i812_font ? TILE_GLYPH_H : FONT_LARGE_H;
+    int tx = x + (TILE_W - glyph_w) / 2;
+    int ty = y + (TILE_H - glyph_h) / 2;
 
     switch (state) {
 

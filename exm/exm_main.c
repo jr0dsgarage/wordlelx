@@ -120,6 +120,7 @@ static int scan_drive(char *found_dir, int maxlen)
 char far *msgAppName = "WORDLE LX";
 char far *msgTitle   = "WordleLX";
 char far *msgFkNew   = "New";
+char far *msgFkFont  = "Font";
 char far *msgFkAbout = "About";
 char far *msgFkHelp  = "Help";
 char far *msgFkQuit  = "Quit";
@@ -129,6 +130,7 @@ char far **StringTable[] = {
     &msgAppName,
     &msgTitle,
     &msgFkNew,
+    &msgFkFont,
     &msgFkAbout,
     &msgFkHelp,
     &msgFkQuit
@@ -146,6 +148,7 @@ BOOL     Done;        /* event loop termination flag       */
 int      game_over_waiting; /* 1 = game ended, waiting for keypress */
 int      about_open;        /* 1 = about dialog visible */
 int      help_open;         /* 1 = help dialog visible */
+int      use_i812_font;     /* 0 = original large board font (default), 1 = i812 font */
 char     pending_msg[48];   /* message shown in next DRAW; empty = none */
 
 /* DAT load state: 0=not yet tried, 1=tried+failed, 2=loaded */
@@ -223,6 +226,12 @@ void far DoHelp(void)
     SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
 }
 
+void far DoFont(void)
+{
+    use_i812_font = use_i812_font ? 0 : 1;
+    SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
+}
+
 void far DoAbout(void)
 {
     if (about_open) {
@@ -234,9 +243,10 @@ void far DoAbout(void)
     SendMsg(&WordleCard, DRAW, DRAW_ALL, 0);
 }
 
-/* F1=New  F8=About  F9=Help  F10=Quit */
+/* F1=New  F5=Font  F8=About  F9=Help  F10=Quit */
 FKEY WordleFKeys[] = {
     { &msgFkNew,  DoNew,  1,               0 },
+    { &msgFkFont, DoFont, 5,               0 },
     { &msgFkAbout, DoAbout, 8,             0 },
     { &msgFkHelp, DoHelp, 9,               0 },
     { &msgFkQuit, DoQuit, 10 + FKEY_LAST,  0 }
@@ -408,6 +418,7 @@ static int handle_key(WORD data, WORD scan)
         c = (char)(data >> 8);
 
     if (data == F1KEY) { DoNew(); return 1; }
+    if (data == F5KEY) { DoFont(); return 1; }
     if (data == F8KEY) { DoAbout(); return 1; }
     if (data == F9KEY) { DoHelp(); return 1; }
     if (data == F10KEY) { DoQuit(); return 1; }

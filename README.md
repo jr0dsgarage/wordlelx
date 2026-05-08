@@ -186,6 +186,22 @@ cd exm
 wmake -f Makefile.wmake run
 ```
 
+### EXM Controls
+
+When running the EXM version on the HP 200LX System Manager:
+
+- **F1** — New Game
+- **F5** — Toggle Font (switch between original large board font and i812 custom bitmap font)
+- **F8** — About
+- **F9** — Help
+- **F10** — Quit
+
+The **Font toggle (F5)** lets you switch between two rendering modes:
+- **Original font** (default): Uses the previous COUGRAPH large tile font (`FONT_LARGE`, 16x12) for board letters and the standard UI label font for panel text
+- **i812 font**: Uses glyphs extracted from `i812.com`, giving the UI and board a custom styled appearance with the i812 bitmap font
+
+The choice persists for the current game session only; it resets to the original font when the app restarts.
+
 ## DOS Font Note
 
 The DOS executable (`WORDLDOS.EXE`) uses 80x25 text mode and therefore depends
