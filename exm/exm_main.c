@@ -412,6 +412,7 @@ static int handle_key(WORD data, WORD scan)
 {
     char c = (char)(data & 0x00FF);
     char letter;
+    int had_pending_msg;
 
     /* Some 200LX key paths carry ASCII in the high byte (e.g. 0x6E00). */
     if (c == 0 && (data >> 8) && scan == 0)
@@ -438,18 +439,39 @@ static int handle_key(WORD data, WORD scan)
         return 1;
     }
 
-    /* Esc is ignored in gameplay. */
-    if (data == ESCKEY || c == (char)(ESCKEY & 0xFF)) { return 0; }
+    /* ESC clears current partial input row if any letters were typed. */
+    if (data == ESCKEY || c == (char)(ESCKEY & 0xFF)) {
+        int old_len;
+        int i;
+
+        had_pending_msg = (pending_msg[0] != '\0');
+        old_len = gs.input_len;
+        if (old_len > 0) {
+            gs.input_len = 0;
+            gs.input[0] = '\0';
+            for (i = 0; i < old_len; i++) {
+                exm_draw_active_tile(&gs, i);
+            }
+        }
+        pending_msg[0] = '\0';
+        if (had_pending_msg) {
+            exm_draw_message2(szCredit1, szCredit2);
+        }
+        return 1;
+    }
     if (data == ENTERKEY || c == '\r' || c == '\n') { do_submit(); return 1; }
 
     if (data == BACKSPACEKEY || c == (char)(BACKSPACEKEY & 0xFF) || c == 127) {
+        had_pending_msg = (pending_msg[0] != '\0');
         if (gs.input_len > 0) {
             gs.input_len--;
             gs.input[gs.input_len] = '\0';
+            exm_draw_active_tile(&gs, gs.input_len);
         }
         pending_msg[0] = '\0';
-        exm_draw_active_row(&gs);
-        exm_draw_message2(szCredit1, szCredit2);
+        if (had_pending_msg) {
+            exm_draw_message2(szCredit1, szCredit2);
+        }
         return 1;
     }
 
@@ -460,11 +482,14 @@ static int handle_key(WORD data, WORD scan)
         letter = scan_to_letter(scan);
 
     if (letter && gs.input_len < WORD_LEN) {
+        had_pending_msg = (pending_msg[0] != '\0');
         gs.input[gs.input_len++] = letter;
         gs.input[gs.input_len]   = '\0';
         pending_msg[0] = '\0';
-        exm_draw_active_row(&gs);
-        exm_draw_message2(szCredit1, szCredit2);
+        exm_draw_active_tile(&gs, gs.input_len - 1);
+        if (had_pending_msg) {
+            exm_draw_message2(szCredit1, szCredit2);
+        }
         return 1;
     }
 

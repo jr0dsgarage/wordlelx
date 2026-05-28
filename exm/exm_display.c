@@ -802,3 +802,17 @@ void exm_draw_active_row(const GameState far *gs)
         draw_tile(x, y, c, LS_UNKNOWN, 1);
     }
 }
+
+void exm_draw_active_tile(const GameState far *gs, int col)
+{
+    int x, y;
+    char c;
+
+    if (gs->over) return;
+    if (col < 0 || col >= WORD_LEN) return;
+
+    y = BOARD_Y + gs->num_guesses * (TILE_H + TILE_VG);
+    x = BOARD_X + col * (TILE_W + TILE_HG);
+    c = (col < gs->input_len) ? gs->input[col] : '\0';
+    draw_tile(x, y, c, LS_UNKNOWN, 1);
+}

@@ -90,4 +90,7 @@ void exm_draw_about_dialog(void);
 /* Redraw only the active input row tiles — fast path for letter entry. */
 void exm_draw_active_row(const GameState far *gs);
 
+/* Redraw one tile in the active input row (0..WORD_LEN-1). */
+void exm_draw_active_tile(const GameState far *gs, int col);
+
 #endif /* EXM_DISPLAY_H */
